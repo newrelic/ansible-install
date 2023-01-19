@@ -50,6 +50,8 @@ Values are read from environment in [vars/main.yml](vars/main.yml)
 - `NEW_RELIC_ACCOUNT_ID`
 - `NEW_RELIC_REGION`
 
+Additionally, an optional `https_proxy` variable can be set to enable a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+
 ### Role variables
 
 #### `targets` **(Required)**
@@ -67,10 +69,6 @@ Sets timeout for installation task. Overrides the default timeout of 600s.
 #### `verbosity` (Optional)
 
 Verbosity options for the installation (`debug` or `trace`). Writes verbose output to a log file on the host.
-
-#### `https_proxy` (Optional)
-
-Enables a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 
 ### Defaults
 
