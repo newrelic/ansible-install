@@ -68,6 +68,10 @@ Sets timeout for installation task. Overrides the default timeout of 600s.
 
 Verbosity options for the installation (`debug` or `trace`). Writes verbose output to a log file on the host.
 
+#### `https_proxy` (Optional)
+
+Enables a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+
 ### Defaults
 
 Set in [defaults/main.yml](defaults/main.yml):
