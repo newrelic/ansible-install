@@ -1,0 +1,34 @@
+---
+- name: Get installation summary coordinates
+  set_fact:
+    index: "{{ lookup('ansible.utils.index_of', output, 'regex', '.*Installation Summary') }}"
+    length: "{{ output | length }}"
+
+- name: Get installation summary lines
+  set_fact:
+    summary_lines: "{{ output[ index|int : length|int ] }}"
+
+- name: Filter debug/trace lines
+  set_fact:
+    summary_lines: "{{ summary_lines | reject('match', 'level=') | list }}"
+
+- name: Detect installation completed
+  set_fact:
+    install_complete: "{{ ( summary_lines | length > 0 ) and ( summary_lines | select('search', 'We encountered an issue*') | list | length == 0 ) }}"
+
+- name: Create installation summary
+  set_fact:
+    summary: 
+      status: "{{ 'COMPLETE' if install_complete else 'INCOMPLETE' }}"
+      node: "{{ ansible_facts['nodename'] }}"
+      summary:  "{{ summary_lines }} "
+
+- name: Report complete installs
+  debug:
+    msg: "{{ summary }}"
+  when: install_complete
+
+- name: Report incomplete installs
+  debug:
+    msg: "{{ summary }}"
+  when: not install_complete

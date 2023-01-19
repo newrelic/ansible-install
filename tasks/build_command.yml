@@ -1,0 +1,35 @@
+# assumes install_command is set
+---
+- name: Translate target names
+  set_fact:
+    target_names: "{{ target_names + [ target_name_map[item] ] }}"
+  loop: "{{ targets }}"
+  vars:
+    target_names: []
+
+- name: Attach install targets
+  set_fact:
+    install_command: "{{ install_command }} -n {{ target_names | join(',') }}"
+
+- name: Attach optional verbosity
+  when: verbosity is defined
+  set_fact:
+    install_command: "{{ install_command }} --{{ verbosity }}"
+
+- name: Define optional CLI tags
+  when: tags is defined
+  set_fact:
+    tags: "--tag {{ tags.keys() | zip(tags.values()) | map('join',':') | join(',') }}"
+
+- name: Attach optional tags
+  when: tags is defined
+  set_fact:
+    install_command: "{{ install_command }} {{ tags }}"
+
+- name: Create install command report
+  set_fact:
+    install_command_report: r"{{ install_command | regex_replace('(?<=NEW_RELIC_API_KEY=)[^\s]*', '<hidden>')}}"
+
+- name: Report install command
+  debug:
+    msg: "{{ install_command_report }}"

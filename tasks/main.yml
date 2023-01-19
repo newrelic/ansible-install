@@ -1,0 +1,17 @@
+---
+- name: Validate variables
+  import_tasks: validate.yml
+  run_once: true
+
+- name: Run Linux install
+  import_tasks: linux.yml
+  when: 
+    - os_name != 'windows'
+
+- name: Run Windows install
+  import_tasks: windows.yml
+  when: 
+    - os_name == 'windows'
+
+- name: Summarize results
+  import_tasks: summary.yml
