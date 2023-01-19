@@ -1,0 +1,15 @@
+- name: Validate role vars
+  ansible.builtin.assert:
+    that:
+      - targets is defined
+      - verbosity is not defined or verbosity in ("debug","trace")
+      - install_timeout_seconds is not defined or install_timeout_seconds is integer
+    quiet: true
+
+- name: Validate targets
+  ansible.builtin.assert:
+    that:
+      - "target_name_map[item] is defined"
+    quiet: true 
+  loop: "{{ targets }}"
+

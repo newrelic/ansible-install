@@ -1,0 +1,56 @@
+---
+- name: Set base install command
+  set_fact:
+    install_command: '& "C:\Program Files\New Relic\New Relic CLI\newrelic.exe" install -y'
+
+- name: Build install command
+  import_tasks: build_command.yml
+
+- name: Set log file path if verbose output
+  when: verbosity is defined
+  set_fact:
+    log_file_path: '{{ verbosity_on_log_file_path_windows }}\newrelic-cli-{{ verbosity }}.log'
+
+- name: Touch verbose output log file
+  when: verbosity is defined
+  ansible.windows.win_file:
+    path: "{{ log_file_path }}"
+    state: touch
+
+- name: Report verbose output log file path
+  when: verbosity is defined
+  debug:
+    msg: "Logs will be saved on host at {{ log_file_path }}"
+
+- name: Redirect stderr to stdout
+  set_fact:
+    install_command: "{{ install_command }} 2>&1"
+
+- name: Set default install timeout
+  when: install_timeout_seconds is undefined
+  set_fact:
+    install_timeout_seconds: "{{ default_install_timeout_seconds }}"
+  
+- name: Run install script
+  ansible.windows.win_shell: |
+      [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'
+      (New-Object System.Net.WebClient).DownloadFile("https://download.newrelic.com/install/newrelic-cli/scripts/install.ps1", "$env:TEMP\install.ps1")
+      & PowerShell.exe -ExecutionPolicy Bypass -File $env:TEMP\install.ps1
+      $env:NEW_RELIC_API_KEY='{{ api_key }}'
+      $env:NEW_RELIC_ACCOUNT_ID='{{ account_id }}'
+      $env:NEW_RELIC_REGION='{{ region }}'
+      {{ install_command }}
+  register: result
+  async: "{{ install_timeout_seconds }}"
+  poll: 10
+  ignore_errors: true
+
+- name: Set output
+  set_fact:
+    output: "{{ result.stdout_lines }}"
+
+- name: Write verbose output to log file
+  when: verbosity is defined
+  ansible.windows.win_copy:
+    dest: "{{ log_file_path }}"
+    content: "{{ result.stdout }}"
