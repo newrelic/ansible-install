@@ -3,7 +3,7 @@ galaxy_info:
   namespace: newrelic
   description: Role for New Relic's Targeted Installs 
   company: New Relic, Inc
-  role_name: install
+  role_name: newrelic_install
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
