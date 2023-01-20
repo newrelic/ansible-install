@@ -50,6 +50,8 @@ Values are read from environment in [vars/main.yml](vars/main.yml)
 - `NEW_RELIC_ACCOUNT_ID`
 - `NEW_RELIC_REGION`
 
+Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+
 ### Role variables
 
 #### `targets` **(Required)**
@@ -100,7 +102,7 @@ Ansible requirements: [requirements.yml](requirements.yml)
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    https_proxy: http://my.proxy:8888
+    HTTPS_PROXY: http://my.proxy:8888
 
 The following environment variables need to be set on the controller:
     NEW_RELIC_API_KEY: <API_KEY>
@@ -116,11 +118,11 @@ practices. Like all official New Relic open source projects, there's a related
 Community topic in the New Relic Explorers Hub. You can find this project's
 topic/threads here:
 
-* [New Relic Documentation](https://docs.newrelic.com): Comprehensive guidance for using our platform
-* [New Relic Community](https://discuss.newrelic.com/c/support-products-agents/new-relic-infrastructure): The best place to engage in troubleshooting questions
-* [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
-* [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
-* [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
+- [New Relic Documentation](https://docs.newrelic.com): Comprehensive guidance for using our platform
+- [New Relic Community](https://discuss.newrelic.com/c/support-products-agents/new-relic-infrastructure): The best place to engage in troubleshooting questions
+- [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
+- [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
+- [New Relic Technical Support](https://support.newrelic.com/) 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan).
 
 ## Contribute
 
@@ -136,7 +138,8 @@ If you believe you have found a security vulnerability in this project or any of
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.
+To all contributors, we thank you! Without your contribution, this project would not be what it is today.
 
 ## License
+
 This project is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
