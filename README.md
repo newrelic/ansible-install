@@ -54,9 +54,9 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 
 ### Role variables
 
-#### `targets` **(Required)**
+#### `targets` (Optional)
 
-List of targeted installs to run on hosts. Available options are listed in [defaults/main.yml](defaults/main.yml)
+List of targeted installs to run on hosts. If no targets are specified, infrastructure and logs will be installed by default. Available options are listed in [defaults/main.yml](defaults/main.yml)
 
 #### `tags` (Optional)
 
