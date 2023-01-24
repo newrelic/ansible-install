@@ -30,7 +30,7 @@ After installing, include the `newrelic.newrelic_install` role in a new or exist
     - role: newrelic.newrelic_install
       vars:
         targets:
-          - infra
+          - infrastructure
           - logs
 ```
 
