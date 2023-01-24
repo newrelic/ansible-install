@@ -96,7 +96,7 @@ Ansible requirements: [requirements.yml](requirements.yml)
     - role: newrelic.newrelic_install
       vars:
         targets:
-          - infra
+          - infrastructure
           - logs
         tags:
           environment: production
