@@ -5,13 +5,6 @@
       - install_timeout_seconds is not defined or install_timeout_seconds is integer
     quiet: true
 
-- name: Set default targets if none are defined
-  when: targets is not defined
-  set_fact:
-    targets:
-      - infrastructure
-      - logs
-
 - name: Validate targets
   ansible.builtin.assert:
     that:

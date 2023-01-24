@@ -16,15 +16,19 @@
   set_fact:
     install_command: "{{ install_command }} --{{ verbosity }}"
 
-- name: Define optional CLI tags
-  when: tags is defined
+- name: Build default CLI tags
   set_fact:
-    tags: "--tag {{ tags.keys() | zip(tags.values()) | map('join',':') | join(',') }}"
+    cli_tags:
+      nr_deployed_by: "ansible-install"
 
-- name: Attach optional tags
+- name: Add optional CLI tags
   when: tags is defined
   set_fact:
-    install_command: "{{ install_command }} {{ tags }}"
+    cli_tags: "{{ cli_tags | combine(tags) }}"
+
+- name: Attach tags
+  set_fact:
+    install_command: "{{ install_command }} --tag {{ cli_tags.keys() | zip(cli_tags.values()) | map('join',':') | join(',') }}"
 
 - name: Create install command report
   set_fact:
