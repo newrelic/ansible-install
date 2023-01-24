@@ -1,5 +1,5 @@
 FROM=.
-TO=~/.ansible/roles/newrelic.install
+TO=~/.ansible/roles/newrelic.newrelic_install
 
 make:
 	rm -rf $(TO)

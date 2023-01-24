@@ -1,8 +1,8 @@
 [![New Relic Experimental header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Experimental.png)](https://opensource.newrelic.com/oss-category/#new-relic-experimental)
 
-# newrelic.install Ansible Role
+# newrelic.newrelic_install Ansible Role
 
-`newrelic.install` is an [Ansible Role](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html) that will help you scale your New Relic observability efforts. It is currently in an experimental phase.
+`newrelic.newrelic_install` is an [Ansible Role](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html) that will help you scale your New Relic observability efforts. It is currently in an experimental phase.
 
 Through this ansible role, we have included Linux and Windows support for New Relic's `infrastructure` and `logs` integrations.
 
@@ -14,20 +14,20 @@ If you need help with Ansible for Windows OS, take a look at [Setting up a Windo
 
 ### ansible-galaxy
 
-**Coming soon**: `ansible-galaxy install newrelic.install`
+**Coming soon**: `ansible-galaxy install newrelic.newrelic_install`
 
 ### Manual
 
-Run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.install`, enabling the role to behave as though it were installed from Galaxy.
+Run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.newrelic_install`, enabling the role to behave as though it were installed from Galaxy.
 
 ## Getting Started
 
-After installing, include the `newrelic.install` role in a new or existing playbook. For example:
+After installing, include the `newrelic.newrelic_install` role in a new or existing playbook. For example:
 
 ```
 - hosts: all
   roles:
-    - role: newrelic.install
+    - role: newrelic.newrelic_install
       vars:
         targets:
           - infra
@@ -80,6 +80,7 @@ Set in [defaults/main.yml](defaults/main.yml):
 - `verbosity_on_log_file_path_linux`
 - `verbosity_on_log_file_path_windows`
 - `default_install_timeout_seconds`
+- `targets`
 
 ## Dependencies
 
@@ -92,7 +93,7 @@ Ansible requirements: [requirements.yml](requirements.yml)
 ```
 - hosts: all
   roles:
-    - role: newrelic.install
+    - role: newrelic.newrelic_install
       vars:
         targets:
           - infra
@@ -126,7 +127,7 @@ topic/threads here:
 
 ## Contribute
 
-We encourage your contributions to improve the `newrelic.install` ansible role! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
+We encourage your contributions to improve the `newrelic.newrelic_install` ansible role! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
 If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource@newrelic.com.
 
