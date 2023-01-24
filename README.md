@@ -80,6 +80,7 @@ Set in [defaults/main.yml](defaults/main.yml):
 - `verbosity_on_log_file_path_linux`
 - `verbosity_on_log_file_path_windows`
 - `default_install_timeout_seconds`
+- `targets`
 
 ## Dependencies
 
