@@ -1,3 +1,4 @@
+---
 - name: Validate role vars
   ansible.builtin.assert:
     that:
@@ -8,7 +9,6 @@
 - name: Validate targets
   ansible.builtin.assert:
     that:
-      - "target_name_map[item] is defined"
-    quiet: true 
+      - target_name_map[item] is defined
+    quiet: true
   loop: "{{ targets }}"
-

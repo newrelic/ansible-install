@@ -1,10 +1,10 @@
 ---
-cli_install_url: "https://download.newrelic.com/install/newrelic-cli/scripts/install.sh"
-cli_install_download_location: "/tmp"
+cli_install_url: https://download.newrelic.com/install/newrelic-cli/scripts/install.sh
+cli_install_download_location: /tmp
 target_name_map:
-  infrastructure: "infrastructure-agent-installer"
-  logs: "logs-integration"
-verbosity_on_log_file_path_linux: "/tmp"
+  infrastructure: infrastructure-agent-installer
+  logs: logs-integration
+verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
 targets:

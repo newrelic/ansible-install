@@ -1,39 +1,39 @@
 # assumes install_command is set
 ---
 - name: Translate target names
-  set_fact:
-    target_names: "{{ target_names + [ target_name_map[item] ] }}"
+  ansible.builtin.set_fact:
+    target_names: "{{ target_names + [target_name_map[item]] }}"
   loop: "{{ targets }}"
   vars:
     target_names: []
 
 - name: Attach install targets
-  set_fact:
+  ansible.builtin.set_fact:
     install_command: "{{ install_command }} -n {{ target_names | join(',') }}"
 
 - name: Attach optional verbosity
   when: verbosity is defined
-  set_fact:
+  ansible.builtin.set_fact:
     install_command: "{{ install_command }} --{{ verbosity }}"
 
 - name: Build default CLI tags
-  set_fact:
+  ansible.builtin.set_fact:
     cli_tags:
-      nr_deployed_by: "ansible-install"
+      nr_deployed_by: ansible-install
 
 - name: Add optional CLI tags
   when: tags is defined
-  set_fact:
+  ansible.builtin.set_fact:
     cli_tags: "{{ cli_tags | combine(tags) }}"
 
 - name: Attach tags
-  set_fact:
-    install_command: "{{ install_command }} --tag {{ cli_tags.keys() | zip(cli_tags.values()) | map('join',':') | join(',') }}"
+  ansible.builtin.set_fact:
+    install_command: "{{ install_command }} --tag {{ cli_tags.keys() | zip(cli_tags.values()) | map('join', ':') | join(',') }}"
 
 - name: Create install command report
-  set_fact:
-    install_command_report: r"{{ install_command | regex_replace('(?<=NEW_RELIC_API_KEY=)[^\s]*', '<hidden>')}}"
+  ansible.builtin.set_fact:
+    install_command_report: r"{{ install_command | regex_replace('(?<=NEW_RELIC_API_KEY=)[^\s]*', '<hidden>') }}"
 
 - name: Report install command
-  debug:
+  ansible.builtin.debug:
     msg: "{{ install_command_report }}"

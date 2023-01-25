@@ -1,50 +1,54 @@
-
+---
 - name: Set base install command
-  set_fact:
-    install_command: "NEW_RELIC_ACCOUNT_ID={{ account_id }} NEW_RELIC_API_KEY={{ api_key }} NEW_RELIC_REGION={{ region }} /usr/local/bin/newrelic install -y"
+  ansible.builtin.set_fact:
+    install_command: NEW_RELIC_ACCOUNT_ID={{ account_id }} NEW_RELIC_API_KEY={{ api_key }} NEW_RELIC_REGION={{ region }} /usr/local/bin/newrelic install -y
 
 - name: Build full install command
-  import_tasks: build_command.yml
+  ansible.builtin.import_tasks: build_command.yml
 
 - name: Set log file path if verbose output
   when: verbosity is defined
-  set_fact:
+  ansible.builtin.set_fact:
     log_file_path: "{{ verbosity_on_log_file_path_linux }}/newrelic-cli-{{ verbosity }}.log"
 
 - name: Set default install task timeout
   when: install_timeout_seconds is undefined
-  set_fact:
+  ansible.builtin.set_fact:
     install_timeout_seconds: "{{ default_install_timeout_seconds }}"
 
 - name: Download install.sh
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ cli_install_url }}"
     dest: "{{ cli_install_download_location }}/install.sh"
     mode: 0777
 
 - name: Run install.sh
-  shell: "{{ cli_install_download_location }}/install.sh"
+  ansible.builtin.command: "{{ cli_install_download_location }}/install.sh"
   register: install_script
-- debug: 
+  changed_when: install_script.rc == 0
+
+- name: Report install script output
+  ansible.builtin.debug:
     var: install_script.stdout_lines
 
 - name: Save verbose output to log file
   when: verbosity is defined
-  set_fact:
+  ansible.builtin.set_fact:
     install_command: "{{ install_command }} 2>&1 | tee {{ log_file_path }}"
 
 - name: Report verbose output log file path
   when: verbosity is defined
-  debug:
-    msg: "Logs will be saved on host at {{ log_file_path }}"
+  ansible.builtin.debug:
+    msg: Logs will be saved on host at {{ log_file_path }}
 
 - name: Run CLI install
-  shell: "{{ install_command }}"
+  ansible.builtin.command: "{{ install_command }}"
   become: true
   register: result
+  changed_when: true
   async: "{{ install_timeout_seconds }}"
   poll: 10
 
 - name: Set output
-  set_fact:
+  ansible.builtin.set_fact:
     output: "{{ result.stdout_lines }}"
