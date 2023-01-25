@@ -1,7 +1,8 @@
+---
 galaxy_info:
   author: New Relic
   namespace: newrelic
-  description: Role for New Relic's Targeted Installs 
+  description: Role for New Relic's Targeted Installs
   company: New Relic, Inc
   role_name: newrelic_install
 
@@ -9,14 +10,7 @@ galaxy_info:
   # next line and provide a value
   # issue_tracker_url: http://example.com/issue/tracker
 
-  # Choose a valid license ID from https://spdx.org - some suggested licenses:
-  # - BSD-3-Clause (default)
-  # - MIT
-  # - GPL-2.0-or-later
-  # - GPL-3.0-only
-  # - Apache-2.0
-  # - CC-BY-4.0
-  license: license (GPL-2.0-or-later, MIT, etc)
+  license: Apache-2.0
 
   min_ansible_version: "2.1"
 
