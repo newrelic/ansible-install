@@ -14,7 +14,7 @@ If you need help with Ansible for Windows OS, take a look at [Setting up a Windo
 
 ### ansible-galaxy
 
-**Coming soon**: `ansible-galaxy install newrelic.newrelic_install`
+`ansible-galaxy install newrelic.newrelic_install`
 
 ### Manual
 
@@ -25,13 +25,10 @@ Run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.n
 After installing, include the `newrelic.newrelic_install` role in a new or existing playbook. For example:
 
 ```
-- hosts: all
+- name: Install New Relic infrastructure & logs
+  hosts: all
   roles:
     - role: newrelic.newrelic_install
-      vars:
-        targets:
-          - infrastructure
-          - logs
 ```
 
 Ensure that the following environment variables are set in your terminal before running the playbook:
