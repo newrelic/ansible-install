@@ -42,7 +42,7 @@
     msg: Logs will be saved on host at {{ log_file_path }}
 
 - name: Run CLI install
-  ansible.builtin.command: "{{ install_command }}"
+  ansible.builtin.shell: "{{ install_command }}"
   become: true
   register: result
   changed_when: true
