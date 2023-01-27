@@ -45,7 +45,7 @@ Ensure that the following environment variables are set in your terminal before 
 
 ### Environment variables
 
-Values are read from environment in [vars/main.yml](vars/main.yml)
+Values are read from environment in [vars/main.yml](https://github.com/newrelic/ansible-install/blob/main/vars/main.yml)
 
 - `NEW_RELIC_API_KEY`
 - `NEW_RELIC_ACCOUNT_ID`
@@ -57,7 +57,7 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 
 #### `targets` (Optional)
 
-List of targeted installs to run on hosts. If no targets are specified, infrastructure and logs will be installed by default. Available options are listed in [defaults/main.yml](defaults/main.yml)
+List of targeted installs to run on hosts. If no targets are specified, infrastructure and logs will be installed by default. Available options are listed in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main/defaults/main.yml)
 
 #### `tags` (Optional)
 
@@ -73,7 +73,7 @@ Verbosity options for the installation (`debug` or `trace`). Writes verbose outp
 
 ### Defaults
 
-Set in [defaults/main.yml](defaults/main.yml):
+Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main/defaults/main.yml):
 
 - `cli_install_url`
 - `cli_install_download_location`
@@ -85,9 +85,9 @@ Set in [defaults/main.yml](defaults/main.yml):
 
 ## Dependencies
 
-Python requirements: [requirements.txt](requirements.txt)
+Python requirements: [requirements.txt](https://github.com/newrelic/ansible-install/blob/main/requirements.txt)
 
-Ansible requirements: [requirements.yml](requirements.yml)
+Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-install/blob/main/requirements.yml)
 
 ## Example Playbook
 
@@ -134,11 +134,11 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/security-policy/), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
-If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
+If you would like to contribute to this project, review [these guidelines](https://github.com/newrelic/ansible-install/blob/main/CONTRIBUTING.md).
 
 To all contributors, we thank you! Without your contribution, this project would not be what it is today.
 
