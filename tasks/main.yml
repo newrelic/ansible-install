@@ -1,17 +1,17 @@
 ---
 - name: Validate variables
-  ansible.builtin.import_tasks: validate.yml
+  import_tasks: validate.yml
   run_once: true
 
 - name: Run Linux install
-  ansible.builtin.import_tasks: linux.yml
+  import_tasks: linux.yml
   when:
     - os_name != 'windows'
 
 - name: Run Windows install
-  ansible.builtin.import_tasks: windows.yml
+  import_tasks: windows.yml
   when:
     - os_name == 'windows'
 
 - name: Summarize results
-  ansible.builtin.import_tasks: summary.yml
+  import_tasks: summary.yml

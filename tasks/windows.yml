@@ -1,14 +1,14 @@
 ---
 - name: Set base install command
-  ansible.builtin.set_fact:
+  set_fact:
     install_command: '& "C:\Program Files\New Relic\New Relic CLI\newrelic.exe" install -y'
 
 - name: Build install command
-  ansible.builtin.import_tasks: build_command.yml
+  import_tasks: build_command.yml
 
 - name: Set log file path if verbose output
   when: verbosity is defined
-  ansible.builtin.set_fact:
+  set_fact:
     log_file_path: "{{ verbosity_on_log_file_path_windows }}\\newrelic-cli-{{ verbosity }}.log"
 
 - name: Touch verbose output log file
@@ -19,16 +19,16 @@
 
 - name: Report verbose output log file path
   when: verbosity is defined
-  ansible.builtin.debug:
+  debug:
     msg: Logs will be saved on host at {{ log_file_path }}
 
 - name: Redirect stderr to stdout
-  ansible.builtin.set_fact:
+  set_fact:
     install_command: "{{ install_command }} 2>&1"
 
 - name: Set default install timeout
   when: install_timeout_seconds is undefined
-  ansible.builtin.set_fact:
+  set_fact:
     install_timeout_seconds: "{{ default_install_timeout_seconds }}"
 
 - name: Run install script
@@ -46,7 +46,7 @@
   ignore_errors: true
 
 - name: Set output
-  ansible.builtin.set_fact:
+  set_fact:
     output: "{{ result.stdout_lines }}"
 
 - name: Write verbose output to log file

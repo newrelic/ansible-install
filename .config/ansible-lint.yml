@@ -3,3 +3,4 @@
 
 skip_list:
   - command-instead-of-shell
+  - fqcn[action-core] # for backwards compatibility
