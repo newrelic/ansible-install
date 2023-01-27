@@ -14,9 +14,11 @@ If you need help with Ansible for Windows OS, take a look at [Setting up a Windo
 
 ## Installation
 
-### ansible-galaxy
+### Ansible Galaxy
 
 `ansible-galaxy install newrelic.newrelic_install`
+
+[Link to Galaxy](https://galaxy.ansible.com/newrelic/newrelic_install)
 
 ### Manual
 
