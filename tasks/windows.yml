@@ -1,5 +1,5 @@
 ---
-- name: Check for environment overrides
+- name: Override environment variables if defined in playbook
   ansible.builtin.import_tasks: override_env.yml
 
 - name: Set base install command
