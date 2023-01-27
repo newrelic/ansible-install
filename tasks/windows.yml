@@ -1,4 +1,7 @@
 ---
+- name: Check for environment overrides
+  ansible.builtin.import_tasks: override_env.yml
+
 - name: Set base install command
   ansible.builtin.set_fact:
     install_command: '& "C:\Program Files\New Relic\New Relic CLI\newrelic.exe" install -y'
