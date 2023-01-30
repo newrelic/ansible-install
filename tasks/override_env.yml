@@ -5,16 +5,16 @@
     env_overrides: "{{ environment[(environment | length) - 1] }}"
 
 - name: Override environment variable NEW_RELIC_ACCOUNT_ID
-  when: env_overrides is defined
+  when: env_overrides is defined and env_overrides.NEW_RELIC_ACCOUNT_ID is defined
   ansible.builtin.set_fact:
     account_id: "{{ env_overrides.NEW_RELIC_ACCOUNT_ID }}"
 
 - name: Override environment variable NEW_RELIC_API_KEY
-  when: env_overrides is defined
+  when: env_overrides is defined and env_overrides.NEW_RELIC_API_KEY is defined
   ansible.builtin.set_fact:
     api_key: "{{ env_overrides.NEW_RELIC_API_KEY }}"
 
 - name: Override environment variable NEW_RELIC_REGION
-  when: env_overrides is defined
+  when: env_overrides is defined and env_overrides.NEW_RELIC_REGION is defined
   ansible.builtin.set_fact:
     region: "{{ env_overrides.NEW_RELIC_REGION }}"
