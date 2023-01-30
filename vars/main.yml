@@ -2,4 +2,4 @@
 os_name: "{{ ansible_os_family | lower }}"
 account_id: "{{ lookup('env', 'NEW_RELIC_ACCOUNT_ID', default=Undefined) }}"
 api_key: "{{ lookup('env', 'NEW_RELIC_API_KEY', default=Undefined) }}"
-region: "{{ lookup('env', 'NEW_RELIC_REGION', default=Undefined) }}"
+region: "{{ lookup('env', 'NEW_RELIC_REGION', default='US') }}"
