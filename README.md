@@ -8,7 +8,7 @@
 
 Through this ansible role, we have included Linux and Windows support for New Relic's `infrastructure` and `logs` integrations.
 
-Please, check out the sections below for details on installation, how to get started, role's variables, dependencies and an example ansible `playbook` showcasing this role's usage.
+Please, check out the sections below for details on installation, how to get started, role's variables, dependencies and some ansible `playbook` examples showcasing this role's usage.
 
 If you need help with Ansible for Windows OS, take a look at [Setting up a Windows Host](https://docs.ansible.com/ansible/latest/os_guide/windows_setup.html), from the [Ansible Documentation](https://docs.ansible.com/ansible/latest/) site.
 
@@ -43,7 +43,7 @@ Ensure that the following environment variables are set in your terminal before 
 
 ## Variables
 
-### Environment variables
+### Environment Variables
 
 Values are read from environment in [vars/main.yml](https://github.com/newrelic/ansible-install/blob/main/vars/main.yml)
 
@@ -51,9 +51,11 @@ Values are read from environment in [vars/main.yml](https://github.com/newrelic/
 - `NEW_RELIC_ACCOUNT_ID`
 - `NEW_RELIC_REGION`
 
-Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+An optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation. Add it to the `environment` keyword in your `playbook`.
 
-### Role variables
+You can also optionally override your terminal's environment variables by adding `play` or `role` level variables inside your `environment` keyword in your playbook. See our [Example Playbooks](#example-playbooks) below and [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+
+### Role Variables
 
 #### `targets` (Optional)
 
@@ -89,10 +91,21 @@ Python requirements: [requirements.txt](https://github.com/newrelic/ansible-inst
 
 Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-install/blob/main/requirements.yml)
 
-## Example Playbook
+## Example Playbooks
+
+### Playbook Based on Environment Variables
+
+The following environment variables need to be set on the controller:
+
+- `NEW_RELIC_API_KEY`: <API_KEY>
+- `NEW_RELIC_ACCOUNT_ID`: <ACCOUNT_ID>
+- `NEW_RELIC_REGION`: <REGION> ("US" or "EU")
+
+Once that is complete, your playbook may just look similar to this example:
 
 ```
-- hosts: all
+- name: Install New Relic infrastructure & logs
+  hosts: all
   roles:
     - role: newrelic.newrelic_install
       vars:
@@ -106,10 +119,36 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
   environment:
     HTTPS_PROXY: http://my.proxy:8888
 
-The following environment variables need to be set on the controller:
-    NEW_RELIC_API_KEY: <API_KEY>
+```
+
+### Playbook with Environment Variables Override
+
+As mentioned [above](#environment-variables), you can use the `environment` keyword in your playbook to override your terminal's environment variables. Note these 2 example playbook options for each case, respectively:
+
+#### Option 1: Play-level Environment Override
+
+```
+- name: Install New Relic infrastructure & logs
+  hosts: all
+  roles:
+    - role: newrelic.newrelic_install
+  environment:
     NEW_RELIC_ACCOUNT_ID: <ACCOUNT_ID>
+    NEW_RELIC_API_KEY: <API_KEY>
     NEW_RELIC_REGION: <REGION> ("US" or "EU")
+```
+
+#### Option 2: Role-level Environment Override
+
+```
+- name: Install New Relic infrastructure & logs
+  hosts: all
+  roles:
+    - role: newrelic.newrelic_install
+      environment:
+        NEW_RELIC_ACCOUNT_ID: <ACCOUNT_ID>
+        NEW_RELIC_API_KEY: <API_KEY>
+        NEW_RELIC_REGION: <REGION> ("US" or "EU")
 ```
 
 ## Support
