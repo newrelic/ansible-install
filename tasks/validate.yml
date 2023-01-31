@@ -1,15 +1,24 @@
 ---
-- name: Validate environment variables on remote host
+- name: Check ansible_env for required environment variables
+  set_fact:
+    NEW_RELIC_ACCOUNT_ID_is_set: "{{ ansible_env.NEW_RELIC_ACCOUNT_ID is defined }}"
+    NEW_RELIC_API_KEY_is_set: "{{ ansible_env.NEW_RELIC_API_KEY is defined }}"
+
+- name: Check environment for required environment variables
+  when: not (NEW_RELIC_ACCOUNT_ID_is_set and NEW_RELIC_API_KEY_is_set)
+  loop: "{{ environment }}"
+  set_fact:
+    NEW_RELIC_ACCOUNT_ID_is_set: "{{ item.NEW_RELIC_ACCOUNT_ID is defined }}"
+    NEW_RELIC_API_KEY_is_set: "{{ item.NEW_RELIC_API_KEY is defined }}"
+  until: NEW_RELIC_ACCOUNT_ID_is_set and NEW_RELIC_API_KEY_is_set
+  retries: 0
+  no_log: true
+
+- name: Assert required environment variables are set
   ansible.builtin.assert:
     that:
-      - ansible_env.NEW_RELIC_ACCOUNT_ID is defined
-      - ansible_env.NEW_RELIC_API_KEY is defined
-    quiet: true
-
-- name: Note default region if none is set
-  when: ansible_env.NEW_RELIC_REGION is not defined
-  ansible.builtin.debug:
-    msg: "NEW_RELIC_REGION is not set. Defaulting to 'US'"
+      - NEW_RELIC_ACCOUNT_ID_is_set
+      - NEW_RELIC_API_KEY_is_set
 
 - name: Validate role vars
   ansible.builtin.assert:
