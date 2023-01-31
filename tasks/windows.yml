@@ -36,9 +36,6 @@
     [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'
     (New-Object System.Net.WebClient).DownloadFile("https://download.newrelic.com/install/newrelic-cli/scripts/install.ps1", "$env:TEMP\install.ps1")
     & PowerShell.exe -ExecutionPolicy Bypass -File $env:TEMP\install.ps1
-    $env:NEW_RELIC_API_KEY='{{ api_key }}'
-    $env:NEW_RELIC_ACCOUNT_ID='{{ account_id }}'
-    $env:NEW_RELIC_REGION='{{ region }}'
     {{ install_command }}
   register: result
   async: "{{ install_timeout_seconds }}"

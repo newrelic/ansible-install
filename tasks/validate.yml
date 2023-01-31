@@ -1,4 +1,16 @@
 ---
+- name: Validate environment variables on remote host
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NEW_RELIC_ACCOUNT_ID is defined
+      - ansible_env.NEW_RELIC_API_KEY is defined
+    quiet: true
+
+- name: Note default region if none is set
+  when: ansible_env.NEW_RELIC_REGION is not defined
+  debug:
+    msg: "NEW_RELIC_REGION is not set. Defaulting to 'US'"
+
 - name: Validate role vars
   ansible.builtin.assert:
     that:
