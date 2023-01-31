@@ -34,9 +34,9 @@ After installing, include the `newrelic.newrelic_install` role in a new or exist
   roles:
     - role: newrelic.newrelic_install
   environment:
-    NEW_RELIC_API_KEY=<API key>
-    NEW_RELIC_ACCOUNT_ID=<Account ID>
-    NEW_RELIC_REGION=<Region>
+    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_ACCOUNT_ID: <Account ID>
+    NEW_RELIC_REGION: <Region>
 ```
 
 ## Variables
@@ -110,9 +110,9 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    NEW_RELIC_API_KEY=<API key>
-    NEW_RELIC_ACCOUNT_ID=<Account ID>
-    NEW_RELIC_REGION=<Region>
+    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_ACCOUNT_ID: <Account ID>
+    NEW_RELIC_REGION: <Region>
     HTTPS_PROXY: http://my.proxy:8888
 ```
 
