@@ -8,7 +8,7 @@
 
 Through this ansible role, we have included Linux and Windows support for New Relic's `infrastructure` and `logs` integrations.
 
-Please, check out the sections below for details on installation, how to get started, role's variables, dependencies and some ansible `playbook` examples showcasing this role's usage.
+Please, check out the sections below for details on installation, how to get started, role's variables, compatibility, dependencies and some ansible `playbook` examples showcasing this role's usage.
 
 If you need help with Ansible for Windows OS, take a look at [Setting up a Windows Host](https://docs.ansible.com/ansible/latest/os_guide/windows_setup.html), from the [Ansible Documentation](https://docs.ansible.com/ansible/latest/) site.
 
@@ -85,11 +85,15 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 - `default_install_timeout_seconds`
 - `targets`
 
+## Versions Compatibility
+
+- Ansible: Tested with the Ansible Core 2.13 and 2.14. Ansible Core versions before 2.11.0 are not supported.
+- Python: Tested with Python 3.10.
+
 ## Dependencies
 
-Python requirements: [requirements.txt](https://github.com/newrelic/ansible-install/blob/main/requirements.txt)
-
-Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-install/blob/main/requirements.yml)
+- Ansible: [requirements.yml](https://github.com/newrelic/ansible-install/blob/main/requirements.yml)
+- Python: [requirements.txt](https://github.com/newrelic/ansible-install/blob/main/requirements.txt)
 
 ## Example Playbooks
 
