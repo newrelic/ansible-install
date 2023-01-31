@@ -6,7 +6,7 @@ galaxy_info:
   company: New Relic, Inc
   role_name: newrelic_install
   license: Apache-2.0
-  min_ansible_version: "2.1"
+  min_ansible_version: "2.10"
 
   platforms:
     - name: EL
