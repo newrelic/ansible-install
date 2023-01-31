@@ -14,11 +14,15 @@
   retries: 0
   no_log: true
 
-- name: Assert required environment variables are set
+- name: Assert NEW_RELIC_ACCOUNT_ID is set
   ansible.builtin.assert:
-    that:
-      - account_id_is_set
-      - api_key_is_set
+    that: account_id_is_set
+    msg: NEW_RELIC_ACCOUNT_ID is required and was not found. Please set this as an environment variable in your play under `environment`
+
+- name: Assert NEW_RELIC_API_KEY is set
+  ansible.builtin.assert:
+    that: api_key_is_set
+    msg: NEW_RELIC_API_KEY is required and was not found. Please set this as an environment variable in your play under `environment`
 
 - name: Validate role vars
   ansible.builtin.assert:
