@@ -33,25 +33,25 @@ After installing, include the `newrelic.newrelic_install` role in a new or exist
   hosts: all
   roles:
     - role: newrelic.newrelic_install
+  environment:
+    NEW_RELIC_API_KEY=<API key>
+    NEW_RELIC_ACCOUNT_ID=<Account ID>
+    NEW_RELIC_REGION=<Region>
 ```
-
-Ensure that the following environment variables are set in your terminal before running the playbook:
-
-- `NEW_RELIC_API_KEY`
-- `NEW_RELIC_ACCOUNT_ID`
-- `NEW_RELIC_REGION`
 
 ## Variables
 
 ### Environment variables
 
-Values are read from environment in [vars/main.yml](https://github.com/newrelic/ansible-install/blob/main/vars/main.yml)
+Values are set under the `environment` keyword in your playbook:
 
-- `NEW_RELIC_API_KEY`
-- `NEW_RELIC_ACCOUNT_ID`
-- `NEW_RELIC_REGION`
+- `NEW_RELIC_API_KEY` (required)
+- `NEW_RELIC_ACCOUNT_ID` (required)
+- `NEW_RELIC_REGION` (optional, default 'US')
 
-Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation. Add it to the `environment` keyword in your `playbook`. See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
+Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
+
+See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 
 ### Role variables
 
@@ -92,7 +92,8 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
 ## Example Playbook
 
 ```
-- hosts: all
+- name: Install New Relic infrastructure & logs
+  hosts: all
   roles:
     - role: newrelic.newrelic_install
       vars:
@@ -104,12 +105,10 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
+    NEW_RELIC_API_KEY=<API key>
+    NEW_RELIC_ACCOUNT_ID=<Account ID>
+    NEW_RELIC_REGION=<Region>
     HTTPS_PROXY: http://my.proxy:8888
-
-The following environment variables need to be set on the controller:
-    NEW_RELIC_API_KEY: <API_KEY>
-    NEW_RELIC_ACCOUNT_ID: <ACCOUNT_ID>
-    NEW_RELIC_REGION: <REGION> ("US" or "EU")
 ```
 
 ## Support

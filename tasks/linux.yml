@@ -1,7 +1,7 @@
 ---
 - name: Set base install command
   ansible.builtin.set_fact:
-    install_command: NEW_RELIC_ACCOUNT_ID={{ account_id }} NEW_RELIC_API_KEY={{ api_key }} NEW_RELIC_REGION={{ region }} /usr/local/bin/newrelic install -y
+    install_command: /usr/local/bin/newrelic install -y
 
 - name: Build full install command
   ansible.builtin.import_tasks: build_command.yml
