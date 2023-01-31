@@ -8,7 +8,7 @@
 
 - name: Note default region if none is set
   when: ansible_env.NEW_RELIC_REGION is not defined
-  debug:
+  ansible.builtin.debug:
     msg: "NEW_RELIC_REGION is not set. Defaulting to 'US'"
 
 - name: Validate role vars
