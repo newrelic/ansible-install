@@ -83,6 +83,11 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 - `default_install_timeout_seconds`
 - `targets`
 
+## Versions Compatibility
+
+- Ansible: Tested with the Ansible Core 2.13 and 2.14. Ansible Core versions before 2.11.0 are not supported.
+- Python: Tested with Python 3.10.
+
 ## Dependencies
 
 Python requirements: [requirements.txt](https://github.com/newrelic/ansible-install/blob/main/requirements.txt)
