@@ -85,7 +85,7 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 
 ## Versions Compatibility
 
-- Ansible: Tested with the Ansible Core 2.13 and 2.14. Ansible Core versions before 2.11.0 are not supported.
+- Ansible: Tested with the Ansible Core 2.13 and 2.14. Ansible Core versions before 2.10 are not supported.
 - Python: Tested with Python 3.10.
 
 ## Dependencies
