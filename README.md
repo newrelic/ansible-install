@@ -34,9 +34,9 @@ After installing, include the `newrelic.newrelic_install` role in a new or exist
   roles:
     - role: newrelic.newrelic_install
   environment:
-    NEW_RELIC_API_KEY=<API key>
-    NEW_RELIC_ACCOUNT_ID=<Account ID>
-    NEW_RELIC_REGION=<Region>
+    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_ACCOUNT_ID: <Account ID>
+    NEW_RELIC_REGION: <Region>
 ```
 
 ## Variables
@@ -83,6 +83,11 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 - `default_install_timeout_seconds`
 - `targets`
 
+## Versions Compatibility
+
+- Ansible: Tested with the Ansible Core 2.13 and 2.14. Ansible Core versions before 2.10 are not supported.
+- Python: Tested with Python 3.10.
+
 ## Dependencies
 
 Python requirements: [requirements.txt](https://github.com/newrelic/ansible-install/blob/main/requirements.txt)
@@ -105,9 +110,9 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    NEW_RELIC_API_KEY=<API key>
-    NEW_RELIC_ACCOUNT_ID=<Account ID>
-    NEW_RELIC_REGION=<Region>
+    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_ACCOUNT_ID: <Account ID>
+    NEW_RELIC_REGION: <Region>
     HTTPS_PROXY: http://my.proxy:8888
 ```
 
@@ -133,7 +138,7 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](https://docs.newrelic.com/docs/licenses/license-information/referenced-policies/security-policy/), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://github.com/newrelic/ansible-install/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
