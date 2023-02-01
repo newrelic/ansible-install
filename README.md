@@ -47,7 +47,7 @@ Values are set under the `environment` keyword in your playbook:
 
 - `NEW_RELIC_API_KEY` (required)
 - `NEW_RELIC_ACCOUNT_ID` (required)
-- `NEW_RELIC_REGION` (optional, default 'US')
+- `NEW_RELIC_REGION` (optional: 'US' or 'EU', default 'US')
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
@@ -106,15 +106,19 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
           - infrastructure
           - logs
         tags:
-          environment: production
+          foo: bar
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_API_KEY: <New Relic User key>
     NEW_RELIC_ACCOUNT_ID: <Account ID>
-    NEW_RELIC_REGION: <Region>
+    NEW_RELIC_REGION: <Region> ('US' or 'EU')
     HTTPS_PROXY: http://my.proxy:8888
 ```
+
+- Find your user key: [API keys UI](https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher)
+
+- Find your account ID: [Account ID documentation](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/)
 
 ## Support
 
