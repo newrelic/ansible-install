@@ -29,7 +29,7 @@ Run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.n
 After installing, include the `newrelic.newrelic_install` role in a new or existing playbook. For example:
 
 ```
-- name: Install New Relic infrastructure & logs
+- name: Install New Relic infrastructure and logs
   hosts: all
   roles:
     - role: newrelic.newrelic_install
@@ -97,7 +97,7 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
 ## Example Playbook
 
 ```
-- name: Install New Relic infrastructure & logs
+- name: Install New Relic infrastructure and logs
   hosts: all
   roles:
     - role: newrelic.newrelic_install
