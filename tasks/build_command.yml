@@ -48,7 +48,7 @@
   register: account_id
 
 - name: Set NEW_RELIC_ACCOUNT_ID
-  ansible.builtin.set_fact: 
+  ansible.builtin.set_fact:
     new_relic_account_id: "{{ account_id.stdout }}"
 
 - name: Fail if NEW_RELIC_ACCOUNT_ID is not set

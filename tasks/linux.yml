@@ -42,12 +42,14 @@
     msg: Logs will be saved on host at {{ log_file_path }}
 
 - name: CLI install profile
-  ansible.builtin.shell: "/usr/local/bin/newrelic profiles add --profile install --apiKey {{ new_relic_api_key }} --accountId {{ new_relic_account_id }} --region {{ new_relic_region|upper }} -y"
+  ansible.builtin.shell: "/usr/local/bin/newrelic profiles add --profile install \
+    --apiKey {{ new_relic_api_key }} --accountId {{ new_relic_account_id }} \
+    --region {{ new_relic_region|upper }} -y"
   become: true
   no_log: true
 
 - name: Default CLI profile
-  shell: "/usr/local/bin/newrelic profiles default --profile install"
+  ansible.builtin.shell: "/usr/local/bin/newrelic profiles default --profile install"
   become: true
 
 - name: Run CLI install

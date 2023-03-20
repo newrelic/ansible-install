@@ -8,4 +8,3 @@ target_name_map:
 verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
-
