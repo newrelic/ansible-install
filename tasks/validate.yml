@@ -1,4 +1,19 @@
 ---
+- name: Targets is set
+  ansible.builtin.assert:
+    that: targets is defined
+    fail_msg: "'targets' must be set"
+
+- name: Check targets is empty
+  ansible.builtin.set_fact:
+    no_targets: "{{ true if not targets }}"
+  when: targets is defined
+
+- name: Targets contains at least one installation target
+  ansible.builtin.assert:
+    that: no_targets != true
+    fail_msg: "Targets must contain at least one installation target"
+
 - name: Check ansible_env for required environment variables
   ansible.builtin.set_fact:
     account_id_is_set: "{{ ansible_env.NEW_RELIC_ACCOUNT_ID is defined }}"

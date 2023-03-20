@@ -50,6 +50,7 @@ Values are set under the `environment` keyword in your playbook:
 - `NEW_RELIC_API_KEY` (required)
 - `NEW_RELIC_ACCOUNT_ID` (required)
 - `NEW_RELIC_REGION` (optional: 'US' or 'EU', default 'US')
+- `NEW_RELIC_APPLICATION_NAME` (optional: The PHP application name to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`)
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
@@ -57,9 +58,9 @@ See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playb
 
 ### Role variables
 
-#### `targets` (Optional)
+#### `targets` (Required)
 
-List of targeted installs to run on hosts. If no targets are specified, infrastructure and logs will be installed by default. Available options are listed in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main/defaults/main.yml)
+List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure` which will be installed along with `logs` even if `infrastructure` is not specified in `targets`. The rest of them can be independently installed.
 
 #### `tags` (Optional)
 
@@ -83,7 +84,6 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 - `verbosity_on_log_file_path_linux`
 - `verbosity_on_log_file_path_windows`
 - `default_install_timeout_seconds`
-- `targets`
 
 ## Versions Compatibility
 
@@ -107,6 +107,7 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         targets:
           - infrastructure
           - logs
+          - apm-php
         tags:
           foo: bar
         install_timeout_seconds: 1000
@@ -115,6 +116,7 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
     NEW_RELIC_API_KEY: <New Relic User key>
     NEW_RELIC_ACCOUNT_ID: <Account ID>
     NEW_RELIC_REGION: <Region> ('US' or 'EU')
+    NEW_RELIC_APPLICATION_NAME: <Application Name>
     HTTPS_PROXY: http://my.proxy:8888
 ```
 
