@@ -82,7 +82,7 @@
 
 - name: Add NEW_RELIC_APPLICATION_NAME environment variable
   ansible.builtin.set_fact:
-    env_vars: "{{ env_vars }} NEW_RELIC_APPLICATION_NAME={{ new_relic_application_name.stdout }}"
+    env_vars: "{{ env_vars }} NEW_RELIC_APPLICATION_NAME=\"{{ new_relic_application_name.stdout }}\""
   when: new_relic_application_name.stdout != ''
 
 - name: Attach environment variables
