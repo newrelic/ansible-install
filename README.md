@@ -50,7 +50,7 @@ Values are set under the `environment` keyword in your playbook:
 - `NEW_RELIC_API_KEY` (required)
 - `NEW_RELIC_ACCOUNT_ID` (required)
 - `NEW_RELIC_REGION` (optional: 'US' or 'EU', default 'US')
-- `NEW_RELIC_APPLICATION_NAME` (optional: The PHP application name to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`)
+- `NEW_RELIC_APPLICATION_NAME` (optional: Used by `apm-php`. The name of the PHP application to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`)
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
@@ -60,7 +60,7 @@ See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playb
 
 #### `targets` (Required)
 
-List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure` which will be installed along with `logs` even if `infrastructure` is not specified in `targets`. The rest of them can be independently installed.
+List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure` which will be installed along with `logs` even if `infrastructure` is not specified in `targets`. The rest of them can be independently installed. Note that `apm-php` is for Linux only.
 
 #### `tags` (Optional)
 
