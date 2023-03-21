@@ -83,7 +83,7 @@
 - name: Add NEW_RELIC_APPLICATION_NAME environment variable
   ansible.builtin.set_fact:
     env_vars: "{{ env_vars }} NEW_RELIC_APPLICATION_NAME=\"{{ new_relic_application_name.stdout }}\""
-  when: new_relic_application_name.stdout != ''
+  when: new_relic_application_name.stdout != '' and target_name_map['apm-php'] in target_names
 
 - name: Attach environment variables
   ansible.builtin.set_fact:
