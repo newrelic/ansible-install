@@ -1,50 +1,32 @@
 ---
-- name: Targets is set
-  ansible.builtin.assert:
-    that: targets is defined
-    fail_msg: "'targets' must be set"
-
-- name: Check targets is empty
-  ansible.builtin.set_fact:
-    no_targets: "{{ true if not targets }}"
-  when: targets is defined
-
-- name: Targets contains at least one installation target
-  ansible.builtin.assert:
-    that: no_targets != true
-    fail_msg: "Targets must contain at least one installation target"
-
-- name: Check ansible_env for required environment variables
-  ansible.builtin.set_fact:
-    account_id_is_set: "{{ ansible_env.NEW_RELIC_ACCOUNT_ID is defined }}"
-    api_key_is_set: "{{ ansible_env.NEW_RELIC_API_KEY is defined }}"
-
-- name: Check environment for required environment variables
-  when: not (account_id_is_set and api_key_is_set)
+- name: Check play environment for required variables
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
     account_id_is_set: "{{ item.NEW_RELIC_ACCOUNT_ID is defined }}"
     api_key_is_set: "{{ item.NEW_RELIC_API_KEY is defined }}"
-  until: account_id_is_set and api_key_is_set
   retries: 0
   no_log: true
 
-- name: Assert NEW_RELIC_ACCOUNT_ID is set
-  ansible.builtin.assert:
-    that: account_id_is_set
-    msg: NEW_RELIC_ACCOUNT_ID is required and was not found. Please set this as an environment variable in your play under `environment`
+- name: Check local environment for required variables if neither is present
+  when: not account_id_is_set and not api_key_is_set
+  ansible.builtin.set_fact:
+    account_id_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_ACCOUNT_ID', default='') else False }}"
+    api_key_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_API_KEY', default='') else False }}"
 
-- name: Assert NEW_RELIC_API_KEY is set
-  ansible.builtin.assert:
-    that: api_key_is_set
-    msg: NEW_RELIC_API_KEY is required and was not found. Please set this as an environment variable in your play under `environment`
-
-- name: Validate role vars
+- name: Assert that required environment variables are set
   ansible.builtin.assert:
     that:
-      - verbosity is not defined or verbosity in ("debug","trace")
-      - install_timeout_seconds is not defined or install_timeout_seconds is integer
-    quiet: true
+      - account_id_is_set
+      - api_key_is_set
+    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Set both values in your play's environment or in your terminal."
+
+- name: Assert at least one installation target is specified
+  ansible.builtin.assert:
+    that:
+      - targets is defined
+      - targets | type_debug == 'list'
+      - targets | length > 0
+    fail_msg: "At least one installation target must be specified"
 
 - name: Validate targets
   ansible.builtin.assert:
@@ -52,3 +34,42 @@
       - target_name_map[item] is defined
     quiet: true
   loop: "{{ targets }}"
+
+- name: Check for targets requiring assertions
+  ansible.builtin.set_fact:
+    infra_targeted: "{{ 'infrastructure' in targets }}"
+    logs_targeted: "{{ 'logs' in targets }}"
+    php_targeted: "{{ 'apm-php' in targets }}"
+
+- name: Assert that logs is not targeted without infrastructure
+  when: logs_targeted
+  ansible.builtin.assert:
+    that:
+      - infra_targeted is true
+    fail_msg: "The logs integration is dependent on the infrastructure integration. To install logs, please also add the infrastructure agent to your targets"
+
+- name: Check for application name in play environment
+  when: php_targeted
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    application_name_is_set: "{{ item.NEW_RELIC_APPLICATION_NAME is defined }}"
+  retries: 0
+
+- name: Check for application name in local environment
+  when: php_targeted and not application_name_is_set
+  ansible.builtin.set_fact:
+    application_name_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_APPLICATION_NAME', default='') else False }}"
+
+- name: Assert that application name is set for APM target
+  when: php_targeted
+  ansible.builtin.assert:
+    that:
+      - application_name_is_set
+    fail_msg: "Environment variable NEW_RELIC_APPLICATION_NAME is required for APM targets. Set this value in your play's environment or in your terminal."
+
+- name: Validate other role vars
+  ansible.builtin.assert:
+    that:
+      - verbosity is not defined or verbosity in ("debug","trace")
+      - install_timeout_seconds is not defined or install_timeout_seconds is integer
+    quiet: true
