@@ -10,8 +10,8 @@
 - name: Check local environment for required variables if neither is present
   when: not account_id_is_set and not api_key_is_set
   ansible.builtin.set_fact:
-    account_id_is_set: "{{ True if lookup('env', 'NEW_RELIC_ACCOUNT_ID', default='') else False }}"
-    api_key_is_set: "{{ True if lookup('env', 'NEW_RELIC_API_KEY', default='') else False }}"
+    account_id_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_ACCOUNT_ID', default='') else False }}"
+    api_key_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_API_KEY', default='') else False }}"
 
 - name: Assert that required environment variables are set
   ansible.builtin.assert:
@@ -35,10 +35,11 @@
     quiet: true
   loop: "{{ targets }}"
 
-- name: Check for targets 'infrastructure' and 'logs'
+- name: Check for targets requiring assertions
   ansible.builtin.set_fact:
     infra_targeted: "{{ 'infrastructure' in targets }}"
     logs_targeted: "{{ 'logs' in targets }}"
+    php_targeted: "{{ 'apm-php' in targets }}"
 
 - name: Assert that logs is not targeted without infrastructure
   when: logs_targeted
@@ -46,6 +47,25 @@
     that:
       - infra_targeted is true
     fail_msg: "The logs integration is dependent on the infrastructure integration. To install logs, please also add the infrastructure agent to your targets"
+
+- name: Check for application name in play environment
+  when: php_targeted
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    application_name_is_set: "{{ item.NEW_RELIC_APPLICATION_NAME is defined }}"
+  retries: 0
+
+- name: Check for application name in local environment
+  when: php_targeted and not application_name_is_set
+  ansible.builtin.set_fact:
+    application_name_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_APPLICATION_NAME', default='') else False }}"
+
+- name: Assert that application name is set for APM target
+  when: php_targeted
+  ansible.builtin.assert:
+    that:
+      - application_name_is_set
+    fail_msg: "Environment variable NEW_RELIC_APPLICATION_NAME is required for APM targets. Set this value in your play's environment or in your terminal."
 
 - name: Validate other role vars
   ansible.builtin.assert:
