@@ -60,7 +60,9 @@ See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playb
 
 #### `targets` (Required)
 
-List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure` which will be installed along with `logs` even if `infrastructure` is not specified in `targets`. The rest of them can be independently installed. Note that `apm-php` is for Linux only.
+List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
+
+Note that the PHP agent installed by target `apm-php` is for Linux only.
 
 #### `tags` (Optional)
 
