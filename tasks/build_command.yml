@@ -33,7 +33,7 @@
 
 - name: Attach tags
   ansible.builtin.set_fact:
-    install_command: "{{ install_command }} --tag {{ cli_tags.keys() | zip(cli_tags.values()) | map('join', ':') | join(',') }} "
+    install_command: "{{ install_command }} --tag {{ cli_tags.keys() | zip(cli_tags.values()) | map('join', ':') | join(',') }}"
 
 - name: Create install command report
   ansible.builtin.set_fact:
