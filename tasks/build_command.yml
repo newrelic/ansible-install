@@ -7,11 +7,6 @@
   vars:
     target_names: []
 
-- name: Add infrastructure if logs is in targets
-  ansible.builtin.set_fact:
-    target_names: "{{ target_names + [target_name_map['infrastructure']] }}"
-  when: "target_name_map['logs'] in target_names and target_name_map['infrastructure'] is not in target_names"
-
 - name: Attach install targets
   ansible.builtin.set_fact:
     install_command: "{{ install_command }} -n {{ target_names | join(',') }}"
