@@ -12,6 +12,19 @@
     target_names: "{{ target_names + [target_name_map['infrastructure']] }}"
   when: "target_name_map['logs'] in target_names and target_name_map['infrastructure'] is not in target_names"
 
+- name: Assert if PHP is targeted for Windows
+  when: php_targeted and os_name == 'windows'
+  ansible.builtin.debug:
+    msg: "APM for PHP on Windows is not supported; removing it from 'targets'..."
+
+- name: Remove APM PHP from targets if on Windows
+  ansible.builtin.set_fact:
+    target_names: "{{ target_names | difference([target_name_map['apm-php']]) }}"
+  when:
+    - os_name == 'windows'
+    - php_targeted
+    - target_names | length > 0  # Fail if 'apm-php' was the only target and was removed.
+
 - name: Attach install targets
   ansible.builtin.set_fact:
     install_command: "{{ install_command }} -n {{ target_names | join(',') }}"
