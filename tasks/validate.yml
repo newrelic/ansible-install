@@ -7,18 +7,12 @@
   retries: 0
   no_log: true
 
-- name: Check local environment for required variables if neither is present
-  when: not account_id_is_set and not api_key_is_set
-  ansible.builtin.set_fact:
-    account_id_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_ACCOUNT_ID', default='') else False }}"
-    api_key_is_set: "{{ True if lookup('ansible.builtin.env', 'NEW_RELIC_API_KEY', default='') else False }}"
-
 - name: Assert that required environment variables are set
   ansible.builtin.assert:
     that:
       - account_id_is_set
       - api_key_is_set
-    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Set both values in your play's environment or in your terminal."
+    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Please set this as an environment variable in your play under `environment`"
 
 - name: Assert at least one installation target is specified
   ansible.builtin.assert:
@@ -45,11 +39,10 @@
   ansible.builtin.assert:
     that:
       - infra_targeted is true
-    fail_msg: "The logs integration is dependent on the infrastructure integration. To install logs, please also add the infrastructure agent to your targets"
+    fail_msg: "The logs integration is dependent on the infrastructure agent. To install logs, please add `infrastructure` to your targets"
 
 - name: Validate other role vars
   ansible.builtin.assert:
     that:
       - verbosity is not defined or verbosity in ("debug","trace")
       - install_timeout_seconds is not defined or install_timeout_seconds is integer
-    quiet: true
