@@ -115,10 +115,10 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    NEW_RELIC_API_KEY: <New Relic User key>
-    NEW_RELIC_ACCOUNT_ID: <Account ID>
-    NEW_RELIC_REGION: <Region> ('US' or 'EU')
-    NEW_RELIC_APPLICATION_NAME: <Application Name>
+    NEW_RELIC_API_KEY: "NRAK-123..."
+    NEW_RELIC_ACCOUNT_ID: "12345678"
+    NEW_RELIC_REGION: "US" (options are "US" or "EU")
+    NEW_RELIC_APPLICATION_NAME: "PHP App"
     HTTPS_PROXY: http://my.proxy:8888
 ```
 
