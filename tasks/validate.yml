@@ -1,35 +1,26 @@
 ---
-- name: Check ansible_env for required environment variables
-  ansible.builtin.set_fact:
-    account_id_is_set: "{{ ansible_env.NEW_RELIC_ACCOUNT_ID is defined }}"
-    api_key_is_set: "{{ ansible_env.NEW_RELIC_API_KEY is defined }}"
-
-- name: Check environment for required environment variables
-  when: not (account_id_is_set and api_key_is_set)
+- name: Check play environment for required variables
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
     account_id_is_set: "{{ item.NEW_RELIC_ACCOUNT_ID is defined }}"
     api_key_is_set: "{{ item.NEW_RELIC_API_KEY is defined }}"
-  until: account_id_is_set and api_key_is_set
   retries: 0
   no_log: true
 
-- name: Assert NEW_RELIC_ACCOUNT_ID is set
-  ansible.builtin.assert:
-    that: account_id_is_set
-    msg: NEW_RELIC_ACCOUNT_ID is required and was not found. Please set this as an environment variable in your play under `environment`
-
-- name: Assert NEW_RELIC_API_KEY is set
-  ansible.builtin.assert:
-    that: api_key_is_set
-    msg: NEW_RELIC_API_KEY is required and was not found. Please set this as an environment variable in your play under `environment`
-
-- name: Validate role vars
+- name: Assert that required environment variables are set
   ansible.builtin.assert:
     that:
-      - verbosity is not defined or verbosity in ("debug","trace")
-      - install_timeout_seconds is not defined or install_timeout_seconds is integer
-    quiet: true
+      - account_id_is_set
+      - api_key_is_set
+    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Please set these in your play under `environment`"
+
+- name: Assert at least one installation target is specified
+  ansible.builtin.assert:
+    that:
+      - targets is defined
+      - targets | type_debug == 'list'
+      - targets | length > 0
+    fail_msg: "At least one installation target must be specified"
 
 - name: Validate targets
   ansible.builtin.assert:
@@ -37,3 +28,21 @@
       - target_name_map[item] is defined
     quiet: true
   loop: "{{ targets }}"
+
+- name: Check for targets requiring assertions
+  ansible.builtin.set_fact:
+    infra_targeted: "{{ 'infrastructure' in targets }}"
+    logs_targeted: "{{ 'logs' in targets }}"
+
+- name: Assert that logs is not targeted without infrastructure
+  when: logs_targeted
+  ansible.builtin.assert:
+    that:
+      - infra_targeted is true
+    fail_msg: "The logs integration is dependent on the infrastructure agent. To install logs, please add `infrastructure` to your targets"
+
+- name: Validate other role vars
+  ansible.builtin.assert:
+    that:
+      - verbosity is not defined or verbosity in ("debug","trace")
+      - install_timeout_seconds is not defined or install_timeout_seconds is integer

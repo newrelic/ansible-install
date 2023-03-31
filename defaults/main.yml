@@ -4,9 +4,7 @@ cli_install_download_location: /tmp
 target_name_map:
   infrastructure: infrastructure-agent-installer
   logs: logs-integration
+  apm-php: php-agent-installer
 verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
-targets:
-  - infrastructure
-  - logs

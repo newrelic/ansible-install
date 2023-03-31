@@ -41,6 +41,8 @@
   async: "{{ install_timeout_seconds }}"
   poll: 10
   ignore_errors: true
+  environment:
+    NEW_RELIC_CLI_SKIP_CORE: "1"
 
 - name: Set output
   ansible.builtin.set_fact:
