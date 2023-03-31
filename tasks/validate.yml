@@ -12,7 +12,7 @@
     that:
       - account_id_is_set
       - api_key_is_set
-    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Please set this as an environment variable in your play under `environment`"
+    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Please set these in your play under `environment`"
 
 - name: Assert at least one installation target is specified
   ansible.builtin.assert:
