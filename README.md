@@ -4,8 +4,6 @@
 
 `newrelic.newrelic_install` is an [Ansible Role](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html) that will help you scale your New Relic Observability efforts. It uses the [New Relic CLI](https://github.com/newrelic/newrelic-cli) and [New Relic Open Installation repository](https://github.com/newrelic/open-install-library) to achieve this.
 
-Currently, we have included Linux and Windows support for New Relic's Infrastructure and Logs integrations, with more agents and integrations following in the near future.
-
 **Note: Installing specific versions of an agent is not supported, this role will always install latest released version of a New Relic agent.**
 
 Please, check out the sections below for details on installation, how to get started, role's variables, dependencies and an example ansible `playbook` showcasing this role's usage.
@@ -60,9 +58,16 @@ See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playb
 
 #### `targets` (Required)
 
-List of targeted installs to run on hosts. Available options are: `infrastructure`, `logs` and `apm-php`. The `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
+List of targeted installs to run on hosts. Available options are:
 
-Note that the PHP agent installed by target `apm-php` is for Linux only.
+- `infrastructure` (Linux & Windows)
+- `logs` (Linux & Windows)
+- `apm-php` (Linux)
+- `apm-nodejs` (Linux)
+
+Note: the `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
+
+Note: The NodeJS agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 
 #### `tags` (Optional)
 
@@ -101,7 +106,7 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
 ## Example Playbook
 
 ```
-- name: Install New Relic infrastructure and logs
+- name: Install New Relic
   hosts: all
   roles:
     - role: newrelic.newrelic_install
