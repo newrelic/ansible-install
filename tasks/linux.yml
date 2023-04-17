@@ -20,7 +20,7 @@
   ansible.builtin.get_url:
     url: "{{ cli_install_url }}"
     dest: "{{ cli_install_download_location }}/install.sh"
-    mode: 0777
+    mode: "777"
 
 - name: Run install.sh
   ansible.builtin.command: "{{ cli_install_download_location }}/install.sh"
