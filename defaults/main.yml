@@ -6,6 +6,7 @@ target_name_map:
   logs: logs-integration
   apm-php: php-agent-installer
   apm-nodejs: node-agent-installer
+  mysql: mysql-open-source-integration
 verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
