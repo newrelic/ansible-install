@@ -51,11 +51,14 @@ List of targeted installs to run on hosts. Available options are:
 - `logs` (Linux & Windows)
 - `apm-php` (Linux)
 - `apm-nodejs` (Linux)
+- `apm-dotnet` (Linux & Windows)
 - `mysql` (Linux)
 
 Important Notes:
+
 - the `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
 - the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
+- the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the `mysql` targets requires and installs `infrastructure`.
 
 #### `tags` (Optional)
@@ -92,9 +95,11 @@ Values are set under the [`environment`](https://docs.ansible.com/ansible/latest
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
 `apm-php`:
+
 - `NEW_RELIC_APPLICATION_NAME` (optional) The name of the PHP application to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`.
 
 `mysql`:
+
 - `NEW_RELIC_MYSQL_PORT` (optional) Defaults to `3306` if unspecified.
 - `NEW_RELIC_MYSQL_USERNAME` (optional) Defaults to `newrelic` if no other is specified. This is the username that the `mysql` integration will setup and will also set in the integration's configuration file (e.g.: `mysql-config.yml`) for data reporting purposes. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_PASSWORD` (optional) The password for the user specified in `NEW_RELIC_MYSQL_USERNAME`. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
