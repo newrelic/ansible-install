@@ -137,8 +137,8 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
   environment:
     NEW_RELIC_API_KEY: "NRAK-123..."
     NEW_RELIC_ACCOUNT_ID: "12345678"
-    NEW_RELIC_REGION: "US" (options are "US" or "EU")
-    NEW_RELIC_APPLICATION_NAME: "PHP App"
+    NEW_RELIC_REGION: "US"
+    NEW_RELIC_APPLICATION_NAME: "My Application"
     HTTPS_PROXY: http://my.proxy:8888
 ```
 
