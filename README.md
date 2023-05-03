@@ -20,9 +20,15 @@ ansible-galaxy install newrelic.newrelic_install
 
 [Link to Galaxy](https://galaxy.ansible.com/newrelic/newrelic_install)
 
+Make sure you have `ansible.windows` and `ansible.utils` if they are not already installed:
+
+```
+ansible-galaxy collection install ansible.windows ansible.utils
+```
+
 ### Manual
 
-Run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.newrelic_install`, enabling the role to behave as though it were installed from Galaxy.
+If you want to use a local copy of the role, clone the repo and run `make` in the project root to copy this repo to `~/.ansible/roles/newrelic.newrelic_install`, enabling the role to behave as though it were installed from Galaxy.
 
 ## Getting Started
 
