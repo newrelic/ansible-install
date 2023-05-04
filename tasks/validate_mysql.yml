@@ -1,0 +1,22 @@
+- name: Check MySQL is targeted
+  ansible.builtin.set_fact:
+    mysql_targeted: "{{ 'mysql' in targets }}"
+
+- name: Check required MySQL environment variable is present
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    mysql_root_password: "{{ item.NEW_RELIC_MYSQL_ROOT_PASSWORD }}"
+  when:
+    - mysql_targeted
+    - item.NEW_RELIC_MYSQL_ROOT_PASSWORD is defined
+
+- name: Attempt to read MySQL root password from remote host environment
+  when: mysql_root_password is undefined
+  ansible.builtin.set_fact:
+    mysql_root_password_from_host: "{{ ansible_env.NEW_RELIC_MYSQL_ROOT_PASSWORD }}"
+
+- name: Assert MySQL root password
+  when: mysql_root_password is undefined
+  ansible.builtin.assert:
+    that: "{{ mysql_root_password_from_host != '' }}"
+    fail_msg: "Environment variable NEW_RELIC_MYSQL_ROOT_PASSWORD must be set under `environment` or as an environment variable in the host's global non-interactive session"
