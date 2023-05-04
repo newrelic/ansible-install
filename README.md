@@ -145,7 +145,7 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
     NEW_RELIC_ACCOUNT_ID: "12345678"
     NEW_RELIC_REGION: "US"
     NEW_RELIC_APPLICATION_NAME: "My Application"
-    HTTPS_PROXY: http://my.proxy:8888
+    HTTPS_PROXY: "http://my.proxy:8888"
 ```
 
 - Find your user key: [API keys UI](https://one.newrelic.com/launcher/api-keys-ui.api-keys-launcher)
