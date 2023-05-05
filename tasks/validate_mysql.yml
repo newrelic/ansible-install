@@ -29,4 +29,3 @@
     that:
       - mysql_root_password_from_host != ''
     fail_msg: "NEW_RELIC_MYSQL_ROOT_PASSWORD is empty. It musts be set under `environment` in the playbook or in the remote host"
-    
