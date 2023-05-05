@@ -8,6 +8,7 @@
   run_once: true
   when:
     - os_name != 'windows'
+    - '"mysql" in targets'
 
 - name: Run Linux install
   ansible.builtin.import_tasks: linux.yml
