@@ -41,6 +41,11 @@
   ansible.builtin.debug:
     msg: Logs will be saved on host at {{ log_file_path }}
 
+- name: Attach MySQL root password if obtained from remote host
+  when: mysql_root_password_from_host is defined
+  ansible.builtin.set_fact:
+    install_command: "NEW_RELIC_MYSQL_ROOT_PASSWORD={{ mysql_root_password_from_host }} {{ install_command }}"
+
 - name: Run CLI install
   ansible.builtin.shell: "{{ install_command }}"
   become: true

@@ -1,0 +1,31 @@
+- name: Read MySQL root password from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    mysql_root_password: item.NEW_RELIC_MYSQL_ROOT_PASSWORD
+  when:
+    - item.NEW_RELIC_MYSQL_ROOT_PASSWORD is defined
+  no_log: true
+
+- name: Assert MySQL root password exists in remote host if not found in playbook's environment
+  when:
+    - mysql_root_password is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NEW_RELIC_MYSQL_ROOT_PASSWORD is defined
+    fail_msg: "NEW_RELIC_MYSQL_ROOT_PASSWORD environment variable is not set"
+
+- name: Read MySQL root password from remote host environment
+  when:
+    - mysql_root_password is undefined
+    - ansible_env.NEW_RELIC_MYSQL_ROOT_PASSWORD is defined
+  ansible.builtin.set_fact:
+    mysql_root_password_from_host: "{{ ansible_env.NEW_RELIC_MYSQL_ROOT_PASSWORD }}"
+
+- name: Assert MySQL root password is not empty
+  when:
+    - mysql_root_password is undefined
+    - mysql_root_password_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - mysql_root_password_from_host != ''
+    fail_msg: "NEW_RELIC_MYSQL_ROOT_PASSWORD is empty. It musts be set under `environment` in the playbook or in the remote host"
