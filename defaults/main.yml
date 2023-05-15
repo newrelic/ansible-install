@@ -8,6 +8,7 @@ target_name_map:
   apm-nodejs: node-agent-installer
   apm-dotnet: dotnet-agent-installer
   mysql: mysql-open-source-integration
+  nginx: nginx-open-source-integration
 verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
