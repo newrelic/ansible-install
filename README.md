@@ -58,6 +58,7 @@ List of targeted installs to run on hosts. Available options are:
 - `apm-php` (Linux)
 - `apm-nodejs` (Linux)
 - `apm-dotnet` (Linux & Windows)
+- `apache` (Linux)
 - `mysql` (Linux)
 - `nginx` (Linux)
 
@@ -67,6 +68,7 @@ Important Notes:
 - the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the following integrations require the infrastructure agent to be installed:
+  - apache
   - mysql
   - nginx
 
