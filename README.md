@@ -109,6 +109,10 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 
 - `NEW_RELIC_APPLICATION_NAME` (optional) The name of the PHP application to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`.
 
+`apache`:
+
+- `NR_CLI_STUB_STATUS_URL` (optional) The URL to check the Apache web server status. This is used to ensure that an Apache web server is running on the host and is in a healthy state before attempting the installation of the Apache On-Host Integration.
+
 `mysql`:
 
 - `NEW_RELIC_MYSQL_PORT` (optional) Defaults to `3306` if unspecified.
