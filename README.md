@@ -111,7 +111,7 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 
 `apache`:
 
-- `NR_CLI_STATUS_URL` (optional) The URL to check the Apache web server status. This is used to ensure that an Apache web server is running on the host and is in a healthy state before attempting the installation of the Apache On-Host Integration. Defaults to: `http://127.0.0.1/server-status?auto`
+- `NEW_RELIC_STATUS_URL` (optional) The URL to check the Apache web server status. This is used to ensure that an Apache web server is running on the host and is in a healthy state before attempting the installation of the Apache On-Host Integration. Defaults to: `http://127.0.0.1/server-status?auto`
 
 `mysql`:
 
