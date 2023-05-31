@@ -7,6 +7,7 @@ target_name_map:
   apm-php: php-agent-installer
   apm-nodejs: node-agent-installer
   apm-dotnet: dotnet-agent-installer
+  apm-java: java-agent-installer
   apache: apache-open-source-integration
   mssql: mssql-server-integration-installer
   mysql: mysql-open-source-integration
