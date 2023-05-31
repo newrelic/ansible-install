@@ -7,6 +7,7 @@ target_name_map:
   apm-php: php-agent-installer
   apm-nodejs: node-agent-installer
   apm-dotnet: dotnet-agent-installer
+  apache: apache-open-source-integration
   mysql: mysql-open-source-integration
   nginx: nginx-open-source-integration
 verbosity_on_log_file_path_linux: /tmp
