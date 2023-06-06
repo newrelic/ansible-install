@@ -35,10 +35,17 @@ If you want to use a local copy of the role, clone the repo and run `make` in th
 After installing, include the `newrelic.newrelic_install` role in a new or existing playbook. For example:
 
 ```
-- name: Install New Relic infrastructure and logs
+- name: Install New Relic
   hosts: all
   roles:
     - role: newrelic.newrelic_install
+      vars:
+        targets:
+          - infrastructure
+          - logs
+          - apm-php
+        tags:
+          foo: bar
   environment:
     NEW_RELIC_API_KEY: <API key>
     NEW_RELIC_ACCOUNT_ID: <Account ID>
@@ -105,15 +112,15 @@ Values are set under the [`environment`](https://docs.ansible.com/ansible/latest
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
-`apm-php`:
+#### `apm-php`:
 
 - `NEW_RELIC_APPLICATION_NAME` (optional) The name of the PHP application to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`.
 
-`apache`:
+#### `apache`:
 
 - `NEW_RELIC_APACHE_STATUS_URL` (optional) The URL to check the Apache web server status. This is used to ensure that an Apache web server is running on the host and is in a healthy state before attempting the installation of the Apache On-Host Integration. Defaults to: `http://127.0.0.1/server-status?auto`
 
-`mysql`:
+#### `mysql`:
 
 - `NEW_RELIC_MYSQL_PORT` (optional) Defaults to `3306` if unspecified.
 - `NEW_RELIC_MYSQL_USERNAME` (optional) Defaults to `newrelic` if no other is specified. This is the username that the `mysql` integration will setup and will also set in the integration's configuration file (e.g.: `mysql-config.yml`) for data reporting purposes. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
@@ -150,9 +157,9 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
         install_timeout_seconds: 1000
         verbosity: debug
   environment:
-    NEW_RELIC_API_KEY: "NRAK-123..."
-    NEW_RELIC_ACCOUNT_ID: "12345678"
-    NEW_RELIC_REGION: "US"
+    NEW_RELIC_API_KEY: <API key>
+    NEW_RELIC_ACCOUNT_ID: <Account ID>
+    NEW_RELIC_REGION: <Region>
     NEW_RELIC_APPLICATION_NAME: "My Application"
     HTTPS_PROXY: "http://my.proxy:8888"
 ```
