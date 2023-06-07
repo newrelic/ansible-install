@@ -47,5 +47,4 @@ galaxy_info:
     - windows
 
 dependencies:
-  - src: ansible.utils
   - src: ansible.windows
