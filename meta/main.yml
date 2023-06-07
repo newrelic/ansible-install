@@ -46,4 +46,6 @@ galaxy_info:
     - linux
     - windows
 
-dependencies: []
+dependencies:
+  - src: ansible.utils
+  - src: ansible.windows
