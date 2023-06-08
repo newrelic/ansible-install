@@ -76,6 +76,7 @@ Important Notes:
 - the `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
 - the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
+- the `apm-java` agent installation supports Java running in Tomcat, Wildfly/Jboss, and Jetty (standalone).
 - the following integrations require the infrastructure agent to be installed:
   - apm-java
   - apache
