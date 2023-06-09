@@ -66,6 +66,7 @@ List of targeted installs to run on hosts. Available options are:
 - `apm-nodejs` (Linux)
 - `apm-dotnet` (Linux & Windows)
 - `apache` (Linux)
+- `mssql` (Windows)
 - `mysql` (Linux)
 - `nginx` (Linux)
 
@@ -76,6 +77,7 @@ Important Notes:
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the following integrations require the infrastructure agent to be installed:
   - apache
+  - mssql
   - mysql
   - nginx
 
@@ -119,6 +121,17 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 #### `apache`:
 
 - `NEW_RELIC_APACHE_STATUS_URL` (optional) The URL to check the Apache web server status. This is used to ensure that an Apache web server is running on the host and is in a healthy state before attempting the installation of the Apache On-Host Integration. Defaults to: `http://127.0.0.1/server-status?auto`
+
+#### `mssql`:
+
+- `NEW_RELIC_MSSQL_DB_HOSTNAME` (optional) Hostname or IP where MS SQL server is running. Defaults to discovered hostname if unspecified.
+- `NEW_RELIC_MSSQL_DB_PORT` (optional) Port on which MS SQL server is listening. Defaults to `1433`
+- `NEW_RELIC_MSSQL_DB_USERNAME` (optional) Username for accessing the MS SQL server. Defaults to `newrelic`. If using a domain user, use the syntax `domain\user`
+- `NEW_RELIC_MSSQL_DB_PASSWORD` (optional) Password for the given SQL or Domain user. If no password is provided, a random password will be generated.
+- `NEW_RELIC_MSSQL_SQL_USERNAME` (optional) Optional credential override passed to `sqlcmd` when creating the SQL user specified by `NEW_RELIC_MSSQL_DB_USERNAME`. If omitted, the default login username will be used.
+- `NEW_RELIC_MSSQL_SQL_PASSWORD` (optional) Optional credential override passed to `sqlcmd` when creating the SQL user specified by `NEW_RELIC_MSSQL_DB_USERNAME`. If omitted, the default login password will be used.
+- `NEW_RELIC_MSSQL_ENABLE_BUFFER_METRICS` (optional) Enable collection of buffer pool metrics. Defaults to true
+- `NEW_RELIC_MSSQL_ENABLE_RESERVE_METRICS` (optional) Enable collection of database partition reserve space. Defaults to true
 
 #### `mysql`:
 
