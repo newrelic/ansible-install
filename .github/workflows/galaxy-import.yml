@@ -1,5 +1,5 @@
 name: Galaxy Import
-on:
+"on":
   push:
     branches:
       - main
