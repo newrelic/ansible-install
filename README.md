@@ -70,6 +70,7 @@ List of targeted installs to run on hosts. Available options are:
 - `mssql` (Windows)
 - `mysql` (Linux)
 - `nginx` (Linux)
+- `cassandra` (Linux)
 
 Important Notes:
 
