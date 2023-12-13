@@ -12,6 +12,8 @@ target_name_map:
   mssql: mssql-server-integration-installer
   mysql: mysql-open-source-integration
   nginx: nginx-open-source-integration
+  super-agent: super-agent
+  logs-super-agent: logs-integration-super-agent
 verbosity_on_log_file_path_linux: /tmp
 verbosity_on_log_file_path_windows: ""
 default_install_timeout_seconds: 600
