@@ -45,4 +45,4 @@
   ansible.builtin.assert:
     that:
       - verbosity is not defined or verbosity in ("debug","trace")
-      - install_timeout_seconds is not defined or install_timeout_seconds is integer
+      - install_timeout_seconds is not defined or install_timeout_seconds | type_debug == 'int'
