@@ -184,6 +184,18 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
 
 - Find your account ID: [Account ID documentation](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/)
 
+# Adding a Target
+To add a new target to your setup, follow these steps:
+
+## Step 1: Update `defaults/main.yml`
+Add the `target-name` and its corresponding `installer` to the `target_name_map`. The `installer` name can be found in the recipes of the [open-install-library](https://github.com/newrelic/open-install-library) repository.
+
+## Step 2: Configure Host File
+Update the host file with the IP address of the target. Include SSH configuration for the target.
+
+## Step 3: Create `playbook.yml`
+Use an existing README as a reference to create a new `playbook.yml`. Add the target key to the `targets` attribute. Include any environment variables required by the agent.
+
 ## Support
 
 New Relic hosts and moderates an online forum where customers can interact with
