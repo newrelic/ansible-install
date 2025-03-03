@@ -194,7 +194,7 @@ Add the `target-name` and its corresponding `installer` to the `target_name_map`
 Update the host file with the IP address of the target host including SSH configuration for the host.
 
 ## Step 3: Create `playbook.yml`
-Use the [Playbook Template](https://github.com/Aashirwadjain/ansible-install/blob/update/ansible-doc/README.md#getting-started) as a reference to create a new `playbook.yml`. Add the target key to the `targets` attribute (include any environment variables required by the agent).
+Use the [Playbook Template](https://github.com/newrelic/ansible-install?tab=readme-ov-file#example-playbook) as a reference to create a new `playbook.yml`. Add the target key to the `targets` attribute (include any environment variables required by the agent).
 
 ## Support
 
