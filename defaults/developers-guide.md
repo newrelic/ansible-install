@@ -28,7 +28,7 @@ Update the `tests/inventory` file with the IP address of the target host includi
 ![image](https://github.com/user-attachments/assets/ad122bd9-2924-4837-b7f8-c8fc78334094)
 
 ### Step 3: Create `playbook.yml`
-Use the [Playbook Template](https://github.com/newrelic/ansible-install/tree/main?tab=readme-ov-file#example-playbook) as a reference to create a new `playbook.yml`. 
+Use the [Playbook Template](https://github.com/newrelic/ansible-install/tree/main?tab=readme-ov-file#example-playbook) as a reference to create a new `ansible-install/playbook.yml`. 
 Add the target key to the targets attribute (include any environment variables required by the agent). 
 
 For more information on enviroment variables, please refer to [newrelic docs](https://docs.newrelic.com/).
