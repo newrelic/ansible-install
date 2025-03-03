@@ -191,10 +191,10 @@ To add a new target to your setup, follow these steps:
 Add the `target-name` and its corresponding `installer` to the `target_name_map`. The `installer` name can be found in the recipes of the [open-install-library](https://github.com/newrelic/open-install-library) repository.
 
 ## Step 2: Configure Host File
-Update the host file with the IP address of the target. Include SSH configuration for the target.
+Update the host file with the IP address of the target host including SSH configuration for the host.
 
 ## Step 3: Create `playbook.yml`
-Use an existing README as a reference to create a new `playbook.yml`. Add the target key to the `targets` attribute. Include any environment variables required by the agent.
+Use the [Playbook Template](https://github.com/Aashirwadjain/ansible-install/blob/update/ansible-doc/README.md#getting-started) as a reference to create a new `playbook.yml`. Add the target key to the `targets` attribute (include any environment variables required by the agent).
 
 ## Support
 
