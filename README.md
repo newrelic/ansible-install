@@ -184,8 +184,8 @@ Ansible requirements: [requirements.yml](https://github.com/newrelic/ansible-ins
 
 - Find your account ID: [Account ID documentation](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/)
 
-# Adding a new target support to `ansible-install`
-For developers who want to add support for a new target to the `ansible-install`, please refer to [this](https://github.com/newrelic/ansible-install/blob/main/defaults/developers-guide.md) documentation.
+## Add a new target support to `newrelic_install` ansible role
+For developers who want to add support for a new target to the `newrelic_install` ansible role, please refer to [this](https://github.com/newrelic/ansible-install/blob/main/defaults/developers-guide.md) documentation.
 
 ## Support
 
