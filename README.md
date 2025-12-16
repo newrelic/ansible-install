@@ -70,6 +70,7 @@ List of targeted installs to run on hosts. Available options are:
 - `mssql` (Windows)
 - `mysql` (Linux)
 - `nginx` (Linux)
+- `postgresql` (Linux & Windows)
 
 Important Notes:
 
@@ -83,6 +84,7 @@ Important Notes:
   - mssql
   - mysql
   - nginx
+  - postgresql
 
 #### `tags` (Optional)
 
