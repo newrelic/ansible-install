@@ -1,7 +1,7 @@
 - name: Read MySQL root password from playbook's environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    mysql_root_password: item.NEW_RELIC_MYSQL_ROOT_PASSWORD
+    mysql_root_password: "{{ item.NEW_RELIC_MYSQL_ROOT_PASSWORD }}"
   when:
     - item.NEW_RELIC_MYSQL_ROOT_PASSWORD is defined
   no_log: true
