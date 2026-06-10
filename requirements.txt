@@ -20,7 +20,7 @@ docker-py==1.10.6
 docker-pycreds==0.4.0
 enrich==1.2.7
 filelock>=3.20.3
-idna==3.7
+idna==3.15
 Jinja2>=3.1.6
 jinja2-time==0.2.0
 jsonschema==4.17.3
@@ -32,7 +32,7 @@ pathspec==0.10.3
 platformdirs==2.6.0
 pluggy==1.0.0
 pycparser==2.21
-Pygments==2.15.0
+Pygments==2.20.0
 pyrsistent==0.19.2
 python-dateutil==2.8.2
 python-slugify==7.0.0
