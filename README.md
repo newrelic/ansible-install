@@ -113,7 +113,7 @@ Values are set under the [`environment`](https://docs.ansible.com/ansible/latest
 
 - `NEW_RELIC_API_KEY` (required)
 - `NEW_RELIC_ACCOUNT_ID` (required)
-- `NEW_RELIC_REGION` (optional: 'US' or 'EU', default 'US')
+- `NEW_RELIC_REGION` (optional: 'US', 'EU', or 'JP', default 'US')
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
