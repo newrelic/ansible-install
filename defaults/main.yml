@@ -10,6 +10,7 @@ target_name_map:
   apm-java: java-agent-installer
   apache: apache-open-source-integration
   mssql: mssql-server-integration-installer
+  mssql-otel: nrdot-collector-mssql
   mysql: mysql-open-source-integration
   nginx: nginx-open-source-integration
   agent-control: agent-control
