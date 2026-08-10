@@ -10,8 +10,8 @@
     - os_name != 'windows'
     - '"mysql" in targets'
 
-- name: Validate Oracle NRDOT required variables
-  ansible.builtin.import_tasks: validate_oracle_nrdot.yml
+- name: Validate Oracle OTel required variables
+  ansible.builtin.import_tasks: validate_oracle_otel.yml
   run_once: true
   when:
     - '"oracle-otel" in targets'
