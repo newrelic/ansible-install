@@ -1,0 +1,31 @@
+- name: Read Oracle service name from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    oracle_service_name: item.NEW_RELIC_ORACLE_DB_SERVICE_NAME
+  when:
+    - item.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
+  no_log: true
+
+- name: Assert Oracle service name exists in remote host if not found in playbook's environment
+  when:
+    - oracle_service_name is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
+    fail_msg: "NEW_RELIC_ORACLE_DB_SERVICE_NAME environment variable is not set"
+
+- name: Read Oracle service name from remote host environment
+  when:
+    - oracle_service_name is undefined
+    - ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
+  ansible.builtin.set_fact:
+    oracle_service_name_from_host: "{{ ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME }}"
+
+- name: Assert Oracle service name is not empty
+  when:
+    - oracle_service_name is undefined
+    - oracle_service_name_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - oracle_service_name_from_host != ''
+    fail_msg: "NEW_RELIC_ORACLE_DB_SERVICE_NAME is empty. It musts be set under `environment` in the playbook or in the remote host"

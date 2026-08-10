@@ -70,6 +70,7 @@ List of targeted installs to run on hosts. Available options are:
 - `mssql` (Windows)
 - `mysql` (Linux)
 - `nginx` (Linux)
+- `oracle-otel` (Linux)
 
 Important Notes:
 
@@ -142,6 +143,14 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MYSQL_USERNAME` (optional) Defaults to `newrelic` if no other is specified. This is the username that the `mysql` integration will setup and will also set in the integration's configuration file (e.g.: `mysql-config.yml`) for data reporting purposes. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_PASSWORD` (optional) The password for the user specified in `NEW_RELIC_MYSQL_USERNAME`. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_ROOT_PASSWORD` (required) The `mysql` integration needs to connect to `mysql` to create the appropriate credentials.
+
+#### `oracle-otel`:
+
+- `NEW_RELIC_ORACLE_DB_HOSTNAME` (optional) Hostname or IP where Oracle is running. Defaults to discovered hostname if unspecified.
+- `NEW_RELIC_ORACLE_DB_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
+- `NEW_RELIC_ORACLE_DB_USERNAME` (optional) Username for accessing Oracle. Defaults to `newrelic`.
+- `NEW_RELIC_ORACLE_DB_PASSWORD` (optional) Password for the given Oracle user.
+- `NEW_RELIC_ORACLE_DB_SERVICE_NAME` (required) The Oracle service name (or SID) to connect to.
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 
