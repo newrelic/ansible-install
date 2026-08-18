@@ -1,9 +1,15 @@
+---
+- name: Determine whether the RDS Oracle OTel target is in scope
+  ansible.builtin.set_fact:
+    oracle_otel_rds_targeted: "{{ 'oracle-otel-rds' in targets }}"
+
+# NR_CLI_ORACLE_SERVICE_NAME (required by both nrdot-collector-oracle-linux and nrdot-collector-oracle-rds)
 - name: Read Oracle service name from playbook's environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    oracle_service_name: item.NEW_RELIC_ORACLE_DB_SERVICE_NAME
+    oracle_service_name: "{{ item.NR_CLI_ORACLE_SERVICE_NAME }}"
   when:
-    - item.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
+    - item.NR_CLI_ORACLE_SERVICE_NAME is defined
   no_log: true
 
 - name: Assert Oracle service name exists in remote host if not found in playbook's environment
@@ -11,15 +17,15 @@
     - oracle_service_name is undefined
   ansible.builtin.assert:
     that:
-      - ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
-    fail_msg: "NEW_RELIC_ORACLE_DB_SERVICE_NAME environment variable is not set"
+      - ansible_env.NR_CLI_ORACLE_SERVICE_NAME is defined
+    fail_msg: "NR_CLI_ORACLE_SERVICE_NAME environment variable is not set"
 
 - name: Read Oracle service name from remote host environment
   when:
     - oracle_service_name is undefined
-    - ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME is defined
+    - ansible_env.NR_CLI_ORACLE_SERVICE_NAME is defined
   ansible.builtin.set_fact:
-    oracle_service_name_from_host: "{{ ansible_env.NEW_RELIC_ORACLE_DB_SERVICE_NAME }}"
+    oracle_service_name_from_host: "{{ ansible_env.NR_CLI_ORACLE_SERVICE_NAME }}"
 
 - name: Assert Oracle service name is not empty
   when:
@@ -28,4 +34,153 @@
   ansible.builtin.assert:
     that:
       - oracle_service_name_from_host != ''
-    fail_msg: "NEW_RELIC_ORACLE_DB_SERVICE_NAME is empty. It musts be set under `environment` in the playbook or in the remote host"
+    fail_msg: "NR_CLI_ORACLE_SERVICE_NAME is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_ORACLE_LOGIN_PASSWORD: the recipe's own prompt allows leaving this blank to
+# auto-generate a random password, but that auto-generate branch only fires in the CLI's
+# interactive prompt flow. This role always installs with the CLI's non-interactive `-y`
+# flag, so a blank value here does not auto-generate and the install fails instead.
+- name: Read Oracle monitoring login password from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    oracle_login_password: "{{ item.NR_CLI_ORACLE_LOGIN_PASSWORD }}"
+  when:
+    - item.NR_CLI_ORACLE_LOGIN_PASSWORD is defined
+  no_log: true
+
+- name: Assert Oracle monitoring login password exists in remote host if not found in playbook's environment
+  when:
+    - oracle_login_password is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_ORACLE_LOGIN_PASSWORD is defined
+    fail_msg: "NR_CLI_ORACLE_LOGIN_PASSWORD environment variable is not set. This role installs non-interactively, so the recipe's auto-generate-if-blank behavior does not apply here."
+
+- name: Read Oracle monitoring login password from remote host environment
+  when:
+    - oracle_login_password is undefined
+    - ansible_env.NR_CLI_ORACLE_LOGIN_PASSWORD is defined
+  ansible.builtin.set_fact:
+    oracle_login_password_from_host: "{{ ansible_env.NR_CLI_ORACLE_LOGIN_PASSWORD }}"
+  no_log: true
+
+- name: Assert Oracle monitoring login password is not empty
+  when:
+    - oracle_login_password is undefined
+    - oracle_login_password_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - oracle_login_password_from_host != ''
+    fail_msg: "NR_CLI_ORACLE_LOGIN_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_ORACLE_HOST (required for oracle-otel-rds only; self-hosted defaults to "localhost")
+- name: Read Oracle RDS endpoint from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    oracle_rds_host: "{{ item.NR_CLI_ORACLE_HOST }}"
+  when:
+    - oracle_otel_rds_targeted
+    - item.NR_CLI_ORACLE_HOST is defined
+  no_log: true
+
+- name: Assert Oracle RDS endpoint exists in remote host if not found in playbook's environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_host is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_ORACLE_HOST is defined
+    fail_msg: "NR_CLI_ORACLE_HOST environment variable is not set. The RDS Oracle recipe has no default host, unlike the self-hosted recipe."
+
+- name: Read Oracle RDS endpoint from remote host environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_host is undefined
+    - ansible_env.NR_CLI_ORACLE_HOST is defined
+  ansible.builtin.set_fact:
+    oracle_rds_host_from_host: "{{ ansible_env.NR_CLI_ORACLE_HOST }}"
+
+- name: Assert Oracle RDS endpoint is not empty
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_host is undefined
+    - oracle_rds_host_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - oracle_rds_host_from_host != ''
+    fail_msg: "NR_CLI_ORACLE_HOST is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_ORACLE_ADMIN_USER (required for oracle-otel-rds only)
+- name: Read Oracle RDS admin username from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    oracle_rds_admin_user: "{{ item.NR_CLI_ORACLE_ADMIN_USER }}"
+  when:
+    - oracle_otel_rds_targeted
+    - item.NR_CLI_ORACLE_ADMIN_USER is defined
+  no_log: true
+
+- name: Assert Oracle RDS admin username exists in remote host if not found in playbook's environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_user is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_ORACLE_ADMIN_USER is defined
+    fail_msg: "NR_CLI_ORACLE_ADMIN_USER environment variable is not set. The RDS master username is required to create the monitoring user (self-hosted uses SSH instead)."
+
+- name: Read Oracle RDS admin username from remote host environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_user is undefined
+    - ansible_env.NR_CLI_ORACLE_ADMIN_USER is defined
+  ansible.builtin.set_fact:
+    oracle_rds_admin_user_from_host: "{{ ansible_env.NR_CLI_ORACLE_ADMIN_USER }}"
+
+- name: Assert Oracle RDS admin username is not empty
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_user is undefined
+    - oracle_rds_admin_user_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - oracle_rds_admin_user_from_host != ''
+    fail_msg: "NR_CLI_ORACLE_ADMIN_USER is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_ORACLE_ADMIN_PASSWORD (required for oracle-otel-rds only)
+- name: Read Oracle RDS admin password from playbook's environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    oracle_rds_admin_password: "{{ item.NR_CLI_ORACLE_ADMIN_PASSWORD }}"
+  when:
+    - oracle_otel_rds_targeted
+    - item.NR_CLI_ORACLE_ADMIN_PASSWORD is defined
+  no_log: true
+
+- name: Assert Oracle RDS admin password exists in remote host if not found in playbook's environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_password is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_ORACLE_ADMIN_PASSWORD is defined
+    fail_msg: "NR_CLI_ORACLE_ADMIN_PASSWORD environment variable is not set. The RDS master password is required to create the monitoring user (self-hosted uses SSH instead)."
+
+- name: Read Oracle RDS admin password from remote host environment
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_password is undefined
+    - ansible_env.NR_CLI_ORACLE_ADMIN_PASSWORD is defined
+  ansible.builtin.set_fact:
+    oracle_rds_admin_password_from_host: "{{ ansible_env.NR_CLI_ORACLE_ADMIN_PASSWORD }}"
+  no_log: true
+
+- name: Assert Oracle RDS admin password is not empty
+  when:
+    - oracle_otel_rds_targeted
+    - oracle_rds_admin_password is undefined
+    - oracle_rds_admin_password_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - oracle_rds_admin_password_from_host != ''
+    fail_msg: "NR_CLI_ORACLE_ADMIN_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"

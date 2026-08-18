@@ -14,7 +14,8 @@
   ansible.builtin.import_tasks: validate_oracle_otel.yml
   run_once: true
   when:
-    - '"oracle-otel" in targets'
+    - os_name != 'windows'
+    - '"oracle-otel" in targets or "oracle-otel-rds" in targets'
 
 - name: Run Linux install
   ansible.builtin.import_tasks: linux.yml
