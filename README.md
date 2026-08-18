@@ -68,7 +68,10 @@ List of targeted installs to run on hosts. Available options are:
 - `apm-java` (Linux)
 - `apache` (Linux)
 - `mssql` (Windows)
-- `mssql-otel` (Windows, Ubuntu, RHEL)
+- `mssql-otel` (Windows, Ubuntu, RHEL) — self-hosted, SQL Server Authentication
+- `mssql-otel-rds` (Windows, Ubuntu, RHEL) — AWS RDS SQL Server, SQL Server Authentication
+- `mssql-otel-winauth` (Windows) — self-hosted, Windows Domain Auth or gMSA
+- `mssql-otel-rds-winauth` (Windows) — AWS RDS SQL Server (AD-domain-joined), Windows Domain Auth or gMSA
 - `mysql` (Linux)
 - `nginx` (Linux)
 
@@ -78,7 +81,7 @@ Important Notes:
 - the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the `apm-java` agent installation supports Java running in Tomcat, Wildfly/Jboss, and Jetty (standalone). Note that this is a limited Java APM installation which instruments certain Java app servers via dynamic attachment using New Relic's Java introspector. More details [here](https://github.com/newrelic/open-install-library/blob/main/docs/guided-java.md)
-- `mssql-otel` is a separate integration from `mssql`: it monitors SQL Server via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of the classic on-host integration, does not require the infrastructure agent, and uses its own `NR_CLI_MSSQL_*` environment variables (see below) rather than `mssql`'s `NEW_RELIC_MSSQL_*` variables.
+- the `mssql-otel*` targets are separate integrations from `mssql`: they monitor SQL Server via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of the classic on-host integration, do not require the infrastructure agent, and use their own `NR_CLI_MSSQL_*` environment variables (see below) rather than `mssql`'s `NEW_RELIC_MSSQL_*` variables.
 - the following integrations require the infrastructure agent to be installed:
   - apm-java
   - apache
@@ -138,17 +141,42 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MSSQL_ENABLE_BUFFER_METRICS` (optional) Enable collection of buffer pool metrics. Defaults to true
 - `NEW_RELIC_MSSQL_ENABLE_RESERVE_METRICS` (optional) Enable collection of database partition reserve space. Defaults to true
 
-#### `mssql-otel`:
+#### `mssql-otel` (self-hosted, SQL Server Authentication):
 
 - `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
 - `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
-- `NR_CLI_MSSQL_SA_PASSWORD` (required unless using Windows Auth or gMSA) The SQL Server `sa` password, used once to create the monitoring login
+- `NR_CLI_MSSQL_SA_PASSWORD` (**required**) The SQL Server `sa` password, used once to create the monitoring login
 - `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
-- `NR_CLI_MSSQL_LOGIN_PASSWORD` (optional, Linux only) Password for the monitoring login. If omitted, a random password is generated
-- `NR_CLI_MSSQL_AUTH_MODE` (optional, Windows only) `1` for SQL Server Auth, `2` for Windows Auth, or `3` for gMSA. Defaults to `1`
-- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (required if `NR_CLI_MSSQL_AUTH_MODE` is `2`, Windows only) Windows account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
-- `NR_CLI_MSSQL_GMSA_ACCOUNT` (required if `NR_CLI_MSSQL_AUTH_MODE` is `3`, Windows only) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
+- `NR_CLI_MSSQL_LOGIN_PASSWORD` (**required**) Password for the monitoring login
+
+#### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring login.
+- `NR_CLI_MSSQL_MASTER_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_MSSQL_LOGIN_PASSWORD` (**required**) Password for the monitoring login
+
+#### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
+
+#### `mssql-otel-rds-winauth` (AWS RDS SQL Server joined to an AWS Managed AD domain, Windows Domain Auth or gMSA):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
 
 #### `mysql`:
 

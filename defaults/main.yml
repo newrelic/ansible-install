@@ -11,6 +11,9 @@ target_name_map:
   apache: apache-open-source-integration
   mssql: mssql-server-integration-installer
   mssql-otel: nrdot-collector-mssql
+  mssql-otel-rds: nrdot-collector-mssql-rds
+  mssql-otel-winauth: nrdot-collector-mssql-winauth
+  mssql-otel-rds-winauth: nrdot-collector-mssql-rds-winauth
   mysql: mysql-open-source-integration
   nginx: nginx-open-source-integration
   agent-control: agent-control
