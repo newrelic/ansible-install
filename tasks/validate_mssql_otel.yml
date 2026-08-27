@@ -101,7 +101,9 @@
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_MSSQL_MASTER_USER is defined
-    fail_msg: "NR_CLI_MSSQL_MASTER_USER environment variable is not set. The RDS master username is required to create the monitoring login for the mssql-otel-rds target."
+    fail_msg: >-
+      NR_CLI_MSSQL_MASTER_USER environment variable is not set. The RDS master username
+      is required to create the monitoring login for the mssql-otel-rds target.
 
 - name: Read NR_CLI_MSSQL_MASTER_USER from remote host environment
   when:
@@ -138,7 +140,9 @@
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_MSSQL_MASTER_PASSWORD is defined
-    fail_msg: "NR_CLI_MSSQL_MASTER_PASSWORD environment variable is not set. The RDS master password is required to create the monitoring login for the mssql-otel-rds target."
+    fail_msg: >-
+      NR_CLI_MSSQL_MASTER_PASSWORD environment variable is not set. The RDS master password
+      is required to create the monitoring login for the mssql-otel-rds target.
 
 - name: Read NR_CLI_MSSQL_MASTER_PASSWORD from remote host environment
   when:
@@ -262,7 +266,10 @@
       - mssql_otel_win_account | trim != ''
       - mssql_otel_win_password is defined
       - mssql_otel_win_password | trim != ''
-    fail_msg: "NR_CLI_MSSQL_WIN_ACCOUNT and NR_CLI_MSSQL_WIN_PASSWORD are required when NR_CLI_MSSQL_AUTH_MODE is 1 (Windows Domain Auth). Set these under `environment` in the playbook or in the remote host."
+    fail_msg: >-
+      NR_CLI_MSSQL_WIN_ACCOUNT and NR_CLI_MSSQL_WIN_PASSWORD are required when
+      NR_CLI_MSSQL_AUTH_MODE is 1 (Windows Domain Auth). Set these under `environment`
+      in the playbook or in the remote host.
 
 # NR_CLI_MSSQL_GMSA_ACCOUNT (required by the winauth recipes when NR_CLI_MSSQL_AUTH_MODE is "2", gMSA)
 - name: Read NR_CLI_MSSQL_GMSA_ACCOUNT from play environment
@@ -289,4 +296,6 @@
     that:
       - mssql_otel_gmsa_account is defined
       - mssql_otel_gmsa_account | trim != ''
-    fail_msg: "NR_CLI_MSSQL_GMSA_ACCOUNT is required when NR_CLI_MSSQL_AUTH_MODE is 2 (gMSA). Set this under `environment` in the playbook or in the remote host."
+    fail_msg: >-
+      NR_CLI_MSSQL_GMSA_ACCOUNT is required when NR_CLI_MSSQL_AUTH_MODE is 2 (gMSA).
+      Set this under `environment` in the playbook or in the remote host.
