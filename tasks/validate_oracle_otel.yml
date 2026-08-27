@@ -54,7 +54,9 @@
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_ORACLE_LOGIN_PASSWORD is defined
-    fail_msg: "NR_CLI_ORACLE_LOGIN_PASSWORD environment variable is not set. This role installs non-interactively, so the recipe's auto-generate-if-blank behavior does not apply here."
+    fail_msg: >-
+      NR_CLI_ORACLE_LOGIN_PASSWORD environment variable is not set. This role installs
+      non-interactively, so the recipe's auto-generate-if-blank behavior does not apply here.
 
 - name: Read Oracle monitoring login password from remote host environment
   when:
@@ -127,7 +129,9 @@
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_ORACLE_ADMIN_USER is defined
-    fail_msg: "NR_CLI_ORACLE_ADMIN_USER environment variable is not set. The RDS master username is required to create the monitoring user (self-hosted uses SSH instead)."
+    fail_msg: >-
+      NR_CLI_ORACLE_ADMIN_USER environment variable is not set. The RDS master username
+      is required to create the monitoring user (self-hosted uses SSH instead).
 
 - name: Read Oracle RDS admin username from remote host environment
   when:
@@ -164,7 +168,9 @@
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_ORACLE_ADMIN_PASSWORD is defined
-    fail_msg: "NR_CLI_ORACLE_ADMIN_PASSWORD environment variable is not set. The RDS master password is required to create the monitoring user (self-hosted uses SSH instead)."
+    fail_msg: >-
+      NR_CLI_ORACLE_ADMIN_PASSWORD environment variable is not set. The RDS master password
+      is required to create the monitoring user (self-hosted uses SSH instead).
 
 - name: Read Oracle RDS admin password from remote host environment
   when:
