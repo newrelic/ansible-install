@@ -148,7 +148,6 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
 - `NR_CLI_MSSQL_SA_PASSWORD` (**required**) The SQL Server `sa` password, used once to create the monitoring login
 - `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
-- `NR_CLI_MSSQL_LOGIN_PASSWORD` (**required**) Password for the monitoring login
 
 #### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication):
 
@@ -158,7 +157,6 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NR_CLI_MSSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring login.
 - `NR_CLI_MSSQL_MASTER_PASSWORD` (**required**) The RDS master password.
 - `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
-- `NR_CLI_MSSQL_LOGIN_PASSWORD` (**required**) Password for the monitoring login
 
 #### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA):
 
