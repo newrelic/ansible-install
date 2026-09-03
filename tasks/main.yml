@@ -10,6 +10,20 @@
     - os_name != 'windows'
     - '"mysql" in targets'
 
+- name: Validate mysql-otel required variables
+  ansible.builtin.import_tasks: validate_mysql_otel.yml
+  run_once: true
+  when:
+    - os_name != 'windows'
+    - '"mysql-otel" in targets or "mysql-otel-rds" in targets'
+
+- name: Validate postgresql-otel required variables
+  ansible.builtin.import_tasks: validate_postgresql_otel.yml
+  run_once: true
+  when:
+    - os_name != 'windows'
+    - '"postgresql-otel" in targets or "postgresql-otel-rds" in targets'
+
 - name: Run Linux install
   ansible.builtin.import_tasks: linux.yml
   when:

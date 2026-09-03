@@ -69,6 +69,10 @@ List of targeted installs to run on hosts. Available options are:
 - `apache` (Linux)
 - `mssql` (Windows)
 - `mysql` (Linux)
+- `mysql-otel` (Linux, self-hosted MySQL, Debian/Ubuntu or RHEL/CentOS)
+- `mysql-otel-rds` (Linux, MySQL/Aurora on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS)
+- `postgresql-otel` (Linux, self-hosted PostgreSQL, Debian/Ubuntu or RHEL/CentOS)
+- `postgresql-otel-rds` (Linux, PostgreSQL/Aurora on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS)
 - `nginx` (Linux)
 
 Important Notes:
@@ -77,6 +81,7 @@ Important Notes:
 - the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the `apm-java` agent installation supports Java running in Tomcat, Wildfly/Jboss, and Jetty (standalone). Note that this is a limited Java APM installation which instruments certain Java app servers via dynamic attachment using New Relic's Java introspector. More details [here](https://github.com/newrelic/open-install-library/blob/main/docs/guided-java.md)
+- the `mysql-otel*` and `postgresql-otel*` targets are separate integrations from `mysql`: they monitor the database via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of a classic on-host integration, do not require the infrastructure agent, and use their own `NR_CLI_MYSQL_*` / `NR_CLI_POSTGRES_*` environment variables (see below) rather than `mysql`'s `NEW_RELIC_MYSQL_*` variables.
 - the following integrations require the infrastructure agent to be installed:
   - apm-java
   - apache
@@ -142,6 +147,42 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MYSQL_USERNAME` (optional) Defaults to `newrelic` if no other is specified. This is the username that the `mysql` integration will setup and will also set in the integration's configuration file (e.g.: `mysql-config.yml`) for data reporting purposes. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_PASSWORD` (optional) The password for the user specified in `NEW_RELIC_MYSQL_USERNAME`. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_ROOT_PASSWORD` (required) The `mysql` integration needs to connect to `mysql` to create the appropriate credentials.
+
+#### `mysql-otel` (self-hosted):
+
+- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MYSQL_SERVER` (optional) MySQL host. Defaults to `localhost`
+- `NR_CLI_MYSQL_PORT` (optional) MySQL port. Defaults to `3306`
+- `NR_CLI_MYSQL_ROOT_PASSWORD` (**required**) The MySQL root password, used once to create the monitoring user
+- `NR_CLI_MYSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+
+#### `mysql-otel-rds` (AWS RDS/Aurora MySQL):
+
+- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MYSQL_SERVER` (**required**) The RDS/Aurora MySQL endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_MYSQL_PORT` (optional) MySQL port. Defaults to `3306`
+- `NR_CLI_MYSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring user.
+- `NR_CLI_MYSQL_MASTER_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_MYSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+
+#### `postgresql-otel` (self-hosted):
+
+- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_POSTGRES_SERVER` (optional) PostgreSQL host. Defaults to `localhost`
+- `NR_CLI_POSTGRES_PORT` (optional) PostgreSQL port. Defaults to `5432`
+- `NR_CLI_POSTGRES_SUPERUSER_PASSWORD` (**required**) The PostgreSQL superuser (`postgres`) password, used once to create the monitoring role
+- `NR_CLI_POSTGRES_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_POSTGRES_DATABASES` (**required**) Comma-separated list of database names to monitor. The recipe requires at least one.
+
+#### `postgresql-otel-rds` (AWS RDS/Aurora PostgreSQL):
+
+- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_POSTGRES_SERVER` (**required**) The RDS/Aurora PostgreSQL endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_POSTGRES_PORT` (optional) PostgreSQL port. Defaults to `5432`
+- `NR_CLI_POSTGRES_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring role.
+- `NR_CLI_POSTGRES_MASTER_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_POSTGRES_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_POSTGRES_DATABASES` (**required**) Comma-separated list of database names to monitor. The recipe requires at least one.
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 

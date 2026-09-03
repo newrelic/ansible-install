@@ -1,0 +1,202 @@
+---
+- name: Determine which postgresql-otel flavor(s) are in scope
+  ansible.builtin.set_fact:
+    postgresql_otel_selfhosted_targeted: "{{ 'postgresql-otel' in targets }}"
+    postgresql_otel_rds_targeted: "{{ 'postgresql-otel-rds' in targets }}"
+    postgresql_otel_targeted: "{{ 'postgresql-otel' in targets or 'postgresql-otel-rds' in targets }}"
+
+# NR_CLI_POSTGRES_SUPERUSER_PASSWORD (required by nrdot-collector-postgresql only; the RDS
+# recipe uses RDS master credentials instead of a local superuser login)
+- name: Read NR_CLI_POSTGRES_SUPERUSER_PASSWORD from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    postgresql_otel_superuser_password: "{{ item.NR_CLI_POSTGRES_SUPERUSER_PASSWORD }}"
+  when:
+    - postgresql_otel_selfhosted_targeted
+    - item.NR_CLI_POSTGRES_SUPERUSER_PASSWORD is defined
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_SUPERUSER_PASSWORD exists in remote host if not found in playbook's environment
+  when:
+    - postgresql_otel_selfhosted_targeted
+    - postgresql_otel_superuser_password is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_POSTGRES_SUPERUSER_PASSWORD is defined
+    fail_msg: "NR_CLI_POSTGRES_SUPERUSER_PASSWORD environment variable is not set. It is required for the postgresql-otel target."
+
+- name: Read NR_CLI_POSTGRES_SUPERUSER_PASSWORD from remote host environment
+  when:
+    - postgresql_otel_selfhosted_targeted
+    - postgresql_otel_superuser_password is undefined
+    - ansible_env.NR_CLI_POSTGRES_SUPERUSER_PASSWORD is defined
+  ansible.builtin.set_fact:
+    postgresql_otel_superuser_password_from_host: "{{ ansible_env.NR_CLI_POSTGRES_SUPERUSER_PASSWORD }}"
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_SUPERUSER_PASSWORD is not empty
+  when:
+    - postgresql_otel_selfhosted_targeted
+    - postgresql_otel_superuser_password is undefined
+    - postgresql_otel_superuser_password_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - postgresql_otel_superuser_password_from_host != ''
+    fail_msg: "NR_CLI_POSTGRES_SUPERUSER_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_POSTGRES_DATABASES (required by both nrdot-collector-postgresql and
+# nrdot-collector-postgresql-rds; the recipe itself hard-asserts at least one database
+# name is set, even for self-hosted, so this has no role-level default)
+- name: Read NR_CLI_POSTGRES_DATABASES from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    postgresql_otel_databases: "{{ item.NR_CLI_POSTGRES_DATABASES }}"
+  when:
+    - postgresql_otel_targeted
+    - item.NR_CLI_POSTGRES_DATABASES is defined
+
+- name: Assert NR_CLI_POSTGRES_DATABASES exists in remote host if not found in playbook's environment
+  when:
+    - postgresql_otel_targeted
+    - postgresql_otel_databases is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_POSTGRES_DATABASES is defined
+    fail_msg: >-
+      NR_CLI_POSTGRES_DATABASES environment variable is not set. At least one database
+      name (comma-separated for multiple) is required for the postgresql-otel target.
+
+- name: Read NR_CLI_POSTGRES_DATABASES from remote host environment
+  when:
+    - postgresql_otel_targeted
+    - postgresql_otel_databases is undefined
+    - ansible_env.NR_CLI_POSTGRES_DATABASES is defined
+  ansible.builtin.set_fact:
+    postgresql_otel_databases_from_host: "{{ ansible_env.NR_CLI_POSTGRES_DATABASES }}"
+
+- name: Assert NR_CLI_POSTGRES_DATABASES is not empty
+  when:
+    - postgresql_otel_targeted
+    - postgresql_otel_databases is undefined
+    - postgresql_otel_databases_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - postgresql_otel_databases_from_host != ''
+    fail_msg: "NR_CLI_POSTGRES_DATABASES is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_POSTGRES_SERVER (required by nrdot-collector-postgresql-rds only; the self-hosted
+# recipe defaults this to "localhost")
+- name: Read NR_CLI_POSTGRES_SERVER from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    postgresql_otel_server: "{{ item.NR_CLI_POSTGRES_SERVER }}"
+  when:
+    - postgresql_otel_rds_targeted
+    - item.NR_CLI_POSTGRES_SERVER is defined
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_SERVER exists in remote host if not found in playbook's environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_server is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_POSTGRES_SERVER is defined
+    fail_msg: "NR_CLI_POSTGRES_SERVER environment variable is not set. The postgresql-otel-rds recipe has no default host, unlike the self-hosted recipe."
+
+- name: Read NR_CLI_POSTGRES_SERVER from remote host environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_server is undefined
+    - ansible_env.NR_CLI_POSTGRES_SERVER is defined
+  ansible.builtin.set_fact:
+    postgresql_otel_server_from_host: "{{ ansible_env.NR_CLI_POSTGRES_SERVER }}"
+
+- name: Assert NR_CLI_POSTGRES_SERVER is not empty
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_server is undefined
+    - postgresql_otel_server_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - postgresql_otel_server_from_host != ''
+    fail_msg: "NR_CLI_POSTGRES_SERVER is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_POSTGRES_MASTER_USER (required by nrdot-collector-postgresql-rds only)
+- name: Read NR_CLI_POSTGRES_MASTER_USER from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    postgresql_otel_master_user: "{{ item.NR_CLI_POSTGRES_MASTER_USER }}"
+  when:
+    - postgresql_otel_rds_targeted
+    - item.NR_CLI_POSTGRES_MASTER_USER is defined
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_MASTER_USER exists in remote host if not found in playbook's environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_user is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_POSTGRES_MASTER_USER is defined
+    fail_msg: >-
+      NR_CLI_POSTGRES_MASTER_USER environment variable is not set. The RDS master username
+      is required to create the monitoring role for the postgresql-otel-rds target.
+
+- name: Read NR_CLI_POSTGRES_MASTER_USER from remote host environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_user is undefined
+    - ansible_env.NR_CLI_POSTGRES_MASTER_USER is defined
+  ansible.builtin.set_fact:
+    postgresql_otel_master_user_from_host: "{{ ansible_env.NR_CLI_POSTGRES_MASTER_USER }}"
+
+- name: Assert NR_CLI_POSTGRES_MASTER_USER is not empty
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_user is undefined
+    - postgresql_otel_master_user_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - postgresql_otel_master_user_from_host != ''
+    fail_msg: "NR_CLI_POSTGRES_MASTER_USER is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_POSTGRES_MASTER_PASSWORD (required by nrdot-collector-postgresql-rds only)
+- name: Read NR_CLI_POSTGRES_MASTER_PASSWORD from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    postgresql_otel_master_password: "{{ item.NR_CLI_POSTGRES_MASTER_PASSWORD }}"
+  when:
+    - postgresql_otel_rds_targeted
+    - item.NR_CLI_POSTGRES_MASTER_PASSWORD is defined
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_MASTER_PASSWORD exists in remote host if not found in playbook's environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_password is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_POSTGRES_MASTER_PASSWORD is defined
+    fail_msg: >-
+      NR_CLI_POSTGRES_MASTER_PASSWORD environment variable is not set. The RDS master password
+      is required to create the monitoring role for the postgresql-otel-rds target.
+
+- name: Read NR_CLI_POSTGRES_MASTER_PASSWORD from remote host environment
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_password is undefined
+    - ansible_env.NR_CLI_POSTGRES_MASTER_PASSWORD is defined
+  ansible.builtin.set_fact:
+    postgresql_otel_master_password_from_host: "{{ ansible_env.NR_CLI_POSTGRES_MASTER_PASSWORD }}"
+  no_log: true
+
+- name: Assert NR_CLI_POSTGRES_MASTER_PASSWORD is not empty
+  when:
+    - postgresql_otel_rds_targeted
+    - postgresql_otel_master_password is undefined
+    - postgresql_otel_master_password_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - postgresql_otel_master_password_from_host != ''
+    fail_msg: "NR_CLI_POSTGRES_MASTER_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
