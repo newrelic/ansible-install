@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     oracle_otel_rds_targeted: "{{ 'oracle-otel-rds' in targets }}"
 
-# NR_CLI_ORACLE_SERVICE_NAME (required by both nrdot-collector-oracle-linux and nrdot-collector-oracle-rds)
+# NR_CLI_ORACLE_SERVICE_NAME (required by both nrdot-collector-oracle and nrdot-collector-oracle-rds)
 - name: Read Oracle service name from playbook's environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
