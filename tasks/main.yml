@@ -10,6 +10,13 @@
     - os_name != 'windows'
     - '"mysql" in targets'
 
+- name: Validate mssql-otel required variables
+  ansible.builtin.import_tasks: validate_mssql_otel.yml
+  run_once: true
+  when: >-
+    'mssql-otel' in targets or 'mssql-otel-rds' in targets or
+    'mssql-otel-winauth' in targets or 'mssql-otel-rds-winauth' in targets
+
 - name: Run Linux install
   ansible.builtin.import_tasks: linux.yml
   when:
