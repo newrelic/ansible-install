@@ -74,6 +74,8 @@ List of targeted installs to run on hosts. Available options are:
 - `mssql-otel-rds-winauth` (Windows) — AWS RDS SQL Server (AD-domain-joined), Windows Domain Auth or gMSA
 - `mysql` (Linux)
 - `nginx` (Linux)
+- `oracle-otel` (Linux, self-hosted Oracle on RHEL/OEL)
+- `oracle-otel-rds` (Linux, Oracle on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS/OEL)
 
 Important Notes:
 
@@ -182,6 +184,29 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MYSQL_USERNAME` (optional) Defaults to `newrelic` if no other is specified. This is the username that the `mysql` integration will setup and will also set in the integration's configuration file (e.g.: `mysql-config.yml`) for data reporting purposes. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_PASSWORD` (optional) The password for the user specified in `NEW_RELIC_MYSQL_USERNAME`. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_ROOT_PASSWORD` (required) The `mysql` integration needs to connect to `mysql` to create the appropriate credentials.
+
+#### `oracle-otel` (self-hosted Oracle, RHEL/OEL):
+
+- `NR_CLI_ORACLE_HOST` (optional) Hostname or IP where Oracle is running. Defaults to `localhost`.
+- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
+- `NR_CLI_ORACLE_SSH_USER` (optional) SSH user for the Oracle Database host, used once to create the monitoring user and grant privileges via OS-authenticated SYSDBA access. Defaults to `opc`.
+- `NR_CLI_ORACLE_CONTAINER_TYPE` (optional) Oracle container type: `1` for CDB (monitor all PDBs) or `2` for a single PDB. Defaults to `1`.
+- `NR_CLI_ORACLE_PDB_NAME` (optional) PDB name. Only used when `NR_CLI_ORACLE_CONTAINER_TYPE` is `2`.
+- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username (created as `c##<name>` in CDB mode). Defaults to `newrelic`.
+- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. The recipe allows leaving this blank to auto-generate a password, but that only works in the CLI's interactive prompt flow — this role installs non-interactively, so a real value must be supplied.
+- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) CDB or PDB service name for the collector connection.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+
+#### `oracle-otel-rds` (Oracle on AWS RDS):
+
+- `NR_CLI_ORACLE_HOST` (**required**) The RDS Oracle endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
+- `NR_CLI_ORACLE_ADMIN_USER` (**required**) The RDS master username, used once to create the monitoring user and grant privileges.
+- `NR_CLI_ORACLE_ADMIN_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username. Defaults to `newrelic`.
+- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. As with `oracle-otel`, the recipe's auto-generate-if-blank behavior only applies to interactive installs, so a real value must be supplied here.
+- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) The RDS DB service name for the collector connection.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 

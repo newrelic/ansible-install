@@ -10,6 +10,12 @@
     - os_name != 'windows'
     - '"mysql" in targets'
 
+- name: Validate Oracle OTel required variables
+  ansible.builtin.import_tasks: validate_oracle_otel.yml
+  run_once: true
+  when:
+    - os_name != 'windows'
+    - '"oracle-otel" in targets or "oracle-otel-rds" in targets'
 - name: Validate mssql-otel required variables
   ansible.builtin.import_tasks: validate_mssql_otel.yml
   run_once: true
