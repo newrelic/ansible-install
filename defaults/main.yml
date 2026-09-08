@@ -10,11 +10,17 @@ target_name_map:
   apm-java: java-agent-installer
   apache: apache-open-source-integration
   mssql: mssql-server-integration-installer
+  mssql-otel: nrdot-collector-mssql
+  mssql-otel-rds: nrdot-collector-mssql-rds
+  mssql-otel-winauth: nrdot-collector-mssql-winauth
+  mssql-otel-rds-winauth: nrdot-collector-mssql-rds-winauth
   mysql: mysql-open-source-integration
   mysql-otel: nrdot-collector-mysql
   mysql-otel-rds: nrdot-collector-mysql-rds
   postgresql-otel: nrdot-collector-postgresql
   postgresql-otel-rds: nrdot-collector-postgresql-rds
+  oracle-otel: nrdot-collector-oracle
+  oracle-otel-rds: nrdot-collector-oracle-rds
   nginx: nginx-open-source-integration
   agent-control: agent-control
   logs-agent-control: logs-integration-agent-control

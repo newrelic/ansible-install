@@ -68,12 +68,18 @@ List of targeted installs to run on hosts. Available options are:
 - `apm-java` (Linux)
 - `apache` (Linux)
 - `mssql` (Windows)
+- `mssql-otel` (Windows, Ubuntu, RHEL) — self-hosted, SQL Server Authentication
+- `mssql-otel-rds` (Windows, Ubuntu, RHEL) — AWS RDS SQL Server, SQL Server Authentication
+- `mssql-otel-winauth` (Windows) — self-hosted, Windows Domain Auth or gMSA
+- `mssql-otel-rds-winauth` (Windows) — AWS RDS SQL Server (AD-domain-joined), Windows Domain Auth or gMSA
 - `mysql` (Linux)
 - `mysql-otel` (Linux, self-hosted MySQL, Debian/Ubuntu or RHEL/CentOS)
 - `mysql-otel-rds` (Linux, MySQL/Aurora on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS)
 - `postgresql-otel` (Linux, self-hosted PostgreSQL, Debian/Ubuntu or RHEL/CentOS)
 - `postgresql-otel-rds` (Linux, PostgreSQL/Aurora on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS)
 - `nginx` (Linux)
+- `oracle-otel` (Linux, self-hosted Oracle on RHEL/OEL)
+- `oracle-otel-rds` (Linux, Oracle on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS/OEL)
 
 Important Notes:
 
@@ -82,6 +88,7 @@ Important Notes:
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the `apm-java` agent installation supports Java running in Tomcat, Wildfly/Jboss, and Jetty (standalone). Note that this is a limited Java APM installation which instruments certain Java app servers via dynamic attachment using New Relic's Java introspector. More details [here](https://github.com/newrelic/open-install-library/blob/main/docs/guided-java.md)
 - the `mysql-otel*` and `postgresql-otel*` targets are separate integrations from `mysql`: they monitor the database via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of a classic on-host integration, do not require the infrastructure agent, and use their own `NR_CLI_MYSQL_*` / `NR_CLI_POSTGRES_*` environment variables (see below) rather than `mysql`'s `NEW_RELIC_MYSQL_*` variables.
+- the `mssql-otel*` targets are separate integrations from `mssql`: they monitor SQL Server via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of the classic on-host integration, do not require the infrastructure agent, and use their own `NR_CLI_MSSQL_*` environment variables (see below) rather than `mssql`'s `NEW_RELIC_MSSQL_*` variables.
 - the following integrations require the infrastructure agent to be installed:
   - apm-java
   - apache
@@ -141,6 +148,41 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MSSQL_ENABLE_BUFFER_METRICS` (optional) Enable collection of buffer pool metrics. Defaults to true
 - `NEW_RELIC_MSSQL_ENABLE_RESERVE_METRICS` (optional) Enable collection of database partition reserve space. Defaults to true
 
+#### `mssql-otel` (self-hosted, SQL Server Authentication):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_SA_PASSWORD` (**required**) The SQL Server `sa` password, used once to create the monitoring login
+- `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+
+#### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring login.
+- `NR_CLI_MSSQL_MASTER_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+
+#### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
+
+#### `mssql-otel-rds-winauth` (AWS RDS SQL Server joined to an AWS Managed AD domain, Windows Domain Auth or gMSA):
+
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
+- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
+
 #### `mysql`:
 
 - `NEW_RELIC_MYSQL_PORT` (optional) Defaults to `3306` if unspecified.
@@ -183,6 +225,28 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NR_CLI_POSTGRES_MASTER_PASSWORD` (**required**) The RDS master password.
 - `NR_CLI_POSTGRES_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
 - `NR_CLI_POSTGRES_DATABASES` (**required**) Comma-separated list of database names to monitor. The recipe requires at least one.
+#### `oracle-otel` (self-hosted Oracle, RHEL/OEL):
+
+- `NR_CLI_ORACLE_HOST` (optional) Hostname or IP where Oracle is running. Defaults to `localhost`.
+- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
+- `NR_CLI_ORACLE_SSH_USER` (optional) SSH user for the Oracle Database host, used once to create the monitoring user and grant privileges via OS-authenticated SYSDBA access. Defaults to `opc`.
+- `NR_CLI_ORACLE_CONTAINER_TYPE` (optional) Oracle container type: `1` for CDB (monitor all PDBs) or `2` for a single PDB. Defaults to `1`.
+- `NR_CLI_ORACLE_PDB_NAME` (optional) PDB name. Only used when `NR_CLI_ORACLE_CONTAINER_TYPE` is `2`.
+- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username (created as `c##<name>` in CDB mode). Defaults to `newrelic`.
+- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. The recipe allows leaving this blank to auto-generate a password, but that only works in the CLI's interactive prompt flow — this role installs non-interactively, so a real value must be supplied.
+- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) CDB or PDB service name for the collector connection.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+
+#### `oracle-otel-rds` (Oracle on AWS RDS):
+
+- `NR_CLI_ORACLE_HOST` (**required**) The RDS Oracle endpoint. Unlike the self-hosted recipe, there is no default.
+- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
+- `NR_CLI_ORACLE_ADMIN_USER` (**required**) The RDS master username, used once to create the monitoring user and grant privileges.
+- `NR_CLI_ORACLE_ADMIN_PASSWORD` (**required**) The RDS master password.
+- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username. Defaults to `newrelic`.
+- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. As with `oracle-otel`, the recipe's auto-generate-if-blank behavior only applies to interactive installs, so a real value must be supplied here.
+- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) The RDS DB service name for the collector connection.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 

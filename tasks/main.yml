@@ -23,6 +23,18 @@
   when:
     - os_name != 'windows'
     - '"postgresql-otel" in targets or "postgresql-otel-rds" in targets'
+- name: Validate Oracle OTel required variables
+  ansible.builtin.import_tasks: validate_oracle_otel.yml
+  run_once: true
+  when:
+    - os_name != 'windows'
+    - '"oracle-otel" in targets or "oracle-otel-rds" in targets'
+- name: Validate mssql-otel required variables
+  ansible.builtin.import_tasks: validate_mssql_otel.yml
+  run_once: true
+  when: >-
+    'mssql-otel' in targets or 'mssql-otel-rds' in targets or
+    'mssql-otel-winauth' in targets or 'mssql-otel-rds-winauth' in targets
 
 - name: Run Linux install
   ansible.builtin.import_tasks: linux.yml
