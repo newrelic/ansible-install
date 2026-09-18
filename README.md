@@ -148,22 +148,28 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MSSQL_ENABLE_BUFFER_METRICS` (optional) Enable collection of buffer pool metrics. Defaults to true
 - `NEW_RELIC_MSSQL_ENABLE_RESERVE_METRICS` (optional) Enable collection of database partition reserve space. Defaults to true
 
-#### `mssql-otel` (self-hosted, SQL Server Authentication):
+#### `mssql-otel` (self-hosted, SQL Server Authentication) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
-- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
-- `NR_CLI_MSSQL_SA_PASSWORD` (**required**) The SQL Server `sa` password, used once to create the monitoring login
-- `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every SQL Server instance to monitor, in the order to number them, e.g.:
+  ```yaml
+  instances:
+    - host: localhost
+      port: 1433
+      login_name: newrelic
+    - host: localhost
+      port: 1434
+      login_name: newrelic
+  ```
+- `NR_CLI_MSSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the admin credentials used once per instance to create the monitoring login, indexed to the instances file's order: `NR_CLI_MSSQL_ADMIN_USER_<i>` / `NR_CLI_MSSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
 
-#### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication):
+A bad instance (wrong password, unsupported SQL Server version, failed login setup) is skipped rather than aborting the whole install — the install only fails if zero instances survive.
+
+#### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
-- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
-- `NR_CLI_MSSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring login.
-- `NR_CLI_MSSQL_MASTER_PASSWORD` (**required**) The RDS master password.
-- `NR_CLI_MSSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS SQL Server instance to monitor, same format as `mssql-otel` above but with RDS endpoints as `host`.
+- `NR_CLI_MSSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring login: `NR_CLI_MSSQL_ADMIN_USER_<i>` / `NR_CLI_MSSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
 
 #### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA):
 
@@ -190,63 +196,88 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 - `NEW_RELIC_MYSQL_PASSWORD` (optional) The password for the user specified in `NEW_RELIC_MYSQL_USERNAME`. See more in [MySQL integration](https://docs.newrelic.com/install/mysql/).
 - `NEW_RELIC_MYSQL_ROOT_PASSWORD` (required) The `mysql` integration needs to connect to `mysql` to create the appropriate credentials.
 
-#### `mysql-otel` (self-hosted):
+#### `mysql-otel` (self-hosted) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_MYSQL_SERVER` (optional) MySQL host. Defaults to `localhost`
-- `NR_CLI_MYSQL_PORT` (optional) MySQL port. Defaults to `3306`
-- `NR_CLI_MYSQL_ROOT_PASSWORD` (**required**) The MySQL root password, used once to create the monitoring user
-- `NR_CLI_MYSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_MYSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every MySQL instance to monitor, e.g.:
+  ```yaml
+  instances:
+    - host: localhost
+      port: 3306
+      login_name: newrelic
+    - host: localhost
+      port: 3307
+      login_name: newrelic
+  ```
+- `NR_CLI_MYSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the admin credentials used once per instance to create the monitoring user, indexed to the instances file's order: `NR_CLI_MYSQL_ADMIN_USER_<i>` / `NR_CLI_MYSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
 
-#### `mysql-otel-rds` (AWS RDS/Aurora MySQL):
+A bad instance is skipped rather than aborting the whole install — the install only fails if zero instances survive.
+
+#### `mysql-otel-rds` (AWS RDS/Aurora MySQL) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_MYSQL_SERVER` (**required**) The RDS/Aurora MySQL endpoint. Unlike the self-hosted recipe, there is no default.
-- `NR_CLI_MYSQL_PORT` (optional) MySQL port. Defaults to `3306`
-- `NR_CLI_MYSQL_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring user.
-- `NR_CLI_MYSQL_MASTER_PASSWORD` (**required**) The RDS master password.
-- `NR_CLI_MYSQL_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
+- `NR_CLI_MYSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS/Aurora MySQL instance to monitor, same format as `mysql-otel` above but with RDS endpoints as `host`.
+- `NR_CLI_MYSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance: `NR_CLI_MYSQL_ADMIN_USER_<i>` / `NR_CLI_MYSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
+- `NR_CLI_MYSQL_TLS_CA_FILE` (optional) Path to a CA certificate file for validating the server's TLS certificate. Leave unset to skip CA validation.
 
-#### `postgresql-otel` (self-hosted):
+#### `postgresql-otel` (self-hosted) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_POSTGRES_SERVER` (optional) PostgreSQL host. Defaults to `localhost`
-- `NR_CLI_POSTGRES_PORT` (optional) PostgreSQL port. Defaults to `5432`
-- `NR_CLI_POSTGRES_SUPERUSER_PASSWORD` (**required**) The PostgreSQL superuser (`postgres`) password, used once to create the monitoring role
-- `NR_CLI_POSTGRES_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
-- `NR_CLI_POSTGRES_DATABASES` (**required**) Comma-separated list of database names to monitor. The recipe requires at least one.
+- `NR_CLI_POSTGRES_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every PostgreSQL instance and its databases to monitor. `databases` is per-instance now (there is no separate global databases variable), e.g.:
+  ```yaml
+  instances:
+    - host: localhost
+      port: 5432
+      login_name: newrelic
+      databases: [app1, app2]
+    - host: localhost
+      port: 5433
+      login_name: newrelic
+      databases: [app3]
+  ```
+- `NR_CLI_POSTGRES_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the superuser credentials used once per instance to create the monitoring role, indexed to the instances file's order: `NR_CLI_POSTGRES_SUPERUSER_USER_<i>` / `NR_CLI_POSTGRES_SUPERUSER_PASSWORD_<i>` (both required for every instance).
+- `NR_CLI_POSTGRES_ENABLE_EXPLAIN_HELPER` (optional, PREVIEW) `y`/`n` — creates a `SECURITY DEFINER` helper function (`otel.explain_statement`) in each monitored database so query plans can be collected for locking/write statements too, without granting the monitoring user DML access. Defaults to `n`.
 
-#### `postgresql-otel-rds` (AWS RDS/Aurora PostgreSQL):
+An instance with no databases listed, or that fails its checks, is skipped rather than aborting the whole install — the install only fails if zero instances survive.
+
+#### `postgresql-otel-rds` (AWS RDS/Aurora PostgreSQL) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
-- `NR_CLI_POSTGRES_SERVER` (**required**) The RDS/Aurora PostgreSQL endpoint. Unlike the self-hosted recipe, there is no default.
-- `NR_CLI_POSTGRES_PORT` (optional) PostgreSQL port. Defaults to `5432`
-- `NR_CLI_POSTGRES_MASTER_USER` (**required**) The RDS master username, used once to create the monitoring role.
-- `NR_CLI_POSTGRES_MASTER_PASSWORD` (**required**) The RDS master password.
-- `NR_CLI_POSTGRES_LOGIN_NAME` (optional) Monitoring username to create. Defaults to `newrelic`
-- `NR_CLI_POSTGRES_DATABASES` (**required**) Comma-separated list of database names to monitor. The recipe requires at least one.
-#### `oracle-otel` (self-hosted Oracle, RHEL/OEL):
+- `NR_CLI_POSTGRES_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file, same format as `postgresql-otel` above but with RDS/Aurora endpoints as `host`.
+- `NR_CLI_POSTGRES_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance: `NR_CLI_POSTGRES_SUPERUSER_USER_<i>` / `NR_CLI_POSTGRES_SUPERUSER_PASSWORD_<i>` (both required for every instance).
+- `NR_CLI_POSTGRES_ENABLE_EXPLAIN_HELPER` (optional, PREVIEW) Same as `postgresql-otel` above. Defaults to `n`.
 
-- `NR_CLI_ORACLE_HOST` (optional) Hostname or IP where Oracle is running. Defaults to `localhost`.
-- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
-- `NR_CLI_ORACLE_SSH_USER` (optional) SSH user for the Oracle Database host, used once to create the monitoring user and grant privileges via OS-authenticated SYSDBA access. Defaults to `opc`.
-- `NR_CLI_ORACLE_CONTAINER_TYPE` (optional) Oracle container type: `1` for CDB (monitor all PDBs) or `2` for a single PDB. Defaults to `1`.
-- `NR_CLI_ORACLE_PDB_NAME` (optional) PDB name. Only used when `NR_CLI_ORACLE_CONTAINER_TYPE` is `2`.
-- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username (created as `c##<name>` in CDB mode). Defaults to `newrelic`.
-- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. The recipe allows leaving this blank to auto-generate a password, but that only works in the CLI's interactive prompt flow — this role installs non-interactively, so a real value must be supplied.
-- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) CDB or PDB service name for the collector connection.
+#### `oracle-otel` (self-hosted Oracle, RHEL/OEL) — supports monitoring multiple instances from one collector:
+
 - `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+- `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every Oracle Database host to monitor. `pdb_name` is only required when that instance's `container_type` is `2` (PDB), e.g.:
+  ```yaml
+  instances:
+    - host: dbhost1.example.com
+      port: 1521
+      ssh_user: opc
+      container_type: 1
+      pdb_name:
+      service: ORCLCDB
+      login_name: newrelic
+    - host: dbhost2.example.com
+      port: 1521
+      ssh_user: opc
+      container_type: 2
+      pdb_name: ORCLPDB1
+      service: ORCLPDB1
+      login_name: newrelic
+  ```
+  The monitoring identity is created via SSH into each host plus OS-authenticated SYSDBA access (`sudo su - oracle -c 'sqlplus / as sysdba'`) — no SYS password is collected. Connect with SSH agent forwarding and make sure each `ssh_user` can run `sudo su - oracle` passwordless.
+- `NR_CLI_ORACLE_SECRETS_FILE` (optional) Path to an optional `KEY=VALUE` secrets file. Since no admin password is needed for self-hosted, this only lets you pin a fixed monitoring password per instance instead of letting the recipe auto-generate one: `NR_CLI_ORACLE_LOGIN_PASSWORD_<i>` (optional per instance).
 
-#### `oracle-otel-rds` (Oracle on AWS RDS):
+An instance that fails its checks is skipped rather than aborting the whole install — the install only fails if zero instances survive.
 
-- `NR_CLI_ORACLE_HOST` (**required**) The RDS Oracle endpoint. Unlike the self-hosted recipe, there is no default.
-- `NR_CLI_ORACLE_PORT` (optional) Port on which Oracle is listening. Defaults to `1521`.
-- `NR_CLI_ORACLE_ADMIN_USER` (**required**) The RDS master username, used once to create the monitoring user and grant privileges.
-- `NR_CLI_ORACLE_ADMIN_PASSWORD` (**required**) The RDS master password.
-- `NR_CLI_ORACLE_LOGIN_NAME` (optional) Monitoring username. Defaults to `newrelic`.
-- `NR_CLI_ORACLE_LOGIN_PASSWORD` (**required**) Password for the monitoring login. As with `oracle-otel`, the recipe's auto-generate-if-blank behavior only applies to interactive installs, so a real value must be supplied here.
-- `NR_CLI_ORACLE_SERVICE_NAME` (**required**) The RDS DB service name for the collector connection.
+#### `oracle-otel-rds` (Oracle on AWS RDS) — supports monitoring multiple instances from one collector:
+
 - `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+- `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS Oracle instance to monitor: `host` / `port` / `service` / `login_name` per entry.
+- `NR_CLI_ORACLE_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring user: `NR_CLI_ORACLE_ADMIN_USER_<i>` / `NR_CLI_ORACLE_ADMIN_PASSWORD_<i>` (both required for every instance). `NR_CLI_ORACLE_LOGIN_PASSWORD_<i>` is optional per instance (leave unset to auto-generate).
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 

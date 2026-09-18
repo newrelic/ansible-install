@@ -2,62 +2,106 @@
 - name: Determine which mssql-otel flavor(s) are in scope
   ansible.builtin.set_fact:
     mssql_otel_selfhosted_sqlauth_targeted: "{{ 'mssql-otel' in targets }}"
-    mssql_otel_rds_targeted: "{{ 'mssql-otel-rds' in targets or 'mssql-otel-rds-winauth' in targets }}"
+    mssql_otel_rds_sqlauth_targeted: "{{ 'mssql-otel-rds' in targets }}"
+    mssql_otel_rds_winauth_targeted: "{{ 'mssql-otel-rds-winauth' in targets }}"
     mssql_otel_winauth_targeted: "{{ 'mssql-otel-winauth' in targets or 'mssql-otel-rds-winauth' in targets }}"
 
-# NR_CLI_MSSQL_SA_PASSWORD (required by nrdot-collector-mssql only; the other recipes use
-# either RDS master credentials or a Windows/gMSA identity instead of a SQL Server 'sa' login)
-- name: Read NR_CLI_MSSQL_SA_PASSWORD from play environment
+# NR_CLI_MSSQL_INSTANCES_FILE (required by nrdot-collector-mssql and nrdot-collector-mssql-rds;
+# a YAML file listing every SQL Server instance to monitor - host/port/login_name per entry.
+# The winauth recipes are untouched by the multi-instance work and still take single-instance vars)
+- name: Read NR_CLI_MSSQL_INSTANCES_FILE from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    mssql_otel_sa_password: "{{ item.NR_CLI_MSSQL_SA_PASSWORD }}"
+    mssql_otel_instances_file: "{{ item.NR_CLI_MSSQL_INSTANCES_FILE }}"
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted
-    - item.NR_CLI_MSSQL_SA_PASSWORD is defined
-  no_log: true
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - item.NR_CLI_MSSQL_INSTANCES_FILE is defined
 
-- name: Assert NR_CLI_MSSQL_SA_PASSWORD exists in remote host if not found in playbook's environment
+- name: Assert NR_CLI_MSSQL_INSTANCES_FILE exists in remote host if not found in playbook's environment
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted
-    - mssql_otel_sa_password is undefined
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_instances_file is undefined
   ansible.builtin.assert:
     that:
-      - ansible_env.NR_CLI_MSSQL_SA_PASSWORD is defined
-    fail_msg: "NR_CLI_MSSQL_SA_PASSWORD environment variable is not set. It is required for the mssql-otel target."
+      - ansible_env.NR_CLI_MSSQL_INSTANCES_FILE is defined
+    fail_msg: >-
+      NR_CLI_MSSQL_INSTANCES_FILE environment variable is not set. It must point to a YAML
+      file (already present on the target host) listing the SQL Server instance(s) to monitor.
 
-- name: Read NR_CLI_MSSQL_SA_PASSWORD from remote host environment
+- name: Read NR_CLI_MSSQL_INSTANCES_FILE from remote host environment
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted
-    - mssql_otel_sa_password is undefined
-    - ansible_env.NR_CLI_MSSQL_SA_PASSWORD is defined
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_instances_file is undefined
+    - ansible_env.NR_CLI_MSSQL_INSTANCES_FILE is defined
   ansible.builtin.set_fact:
-    mssql_otel_sa_password_from_host: "{{ ansible_env.NR_CLI_MSSQL_SA_PASSWORD }}"
-  no_log: true
+    mssql_otel_instances_file_from_host: "{{ ansible_env.NR_CLI_MSSQL_INSTANCES_FILE }}"
 
-- name: Assert NR_CLI_MSSQL_SA_PASSWORD is not empty
+- name: Assert NR_CLI_MSSQL_INSTANCES_FILE is not empty
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted
-    - mssql_otel_sa_password is undefined
-    - mssql_otel_sa_password_from_host is defined
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_instances_file is undefined
+    - mssql_otel_instances_file_from_host is defined
   ansible.builtin.assert:
     that:
-      - mssql_otel_sa_password_from_host != ''
-    fail_msg: "NR_CLI_MSSQL_SA_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
+      - mssql_otel_instances_file_from_host != ''
+    fail_msg: "NR_CLI_MSSQL_INSTANCES_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
 
-# NR_CLI_MSSQL_SERVER (required by nrdot-collector-mssql-rds and nrdot-collector-mssql-rds-winauth;
-# self-hosted recipes default this to "localhost")
+# NR_CLI_MSSQL_SECRETS_FILE (required by nrdot-collector-mssql and nrdot-collector-mssql-rds;
+# KEY=VALUE per line, NR_CLI_MSSQL_ADMIN_USER_<i>/NR_CLI_MSSQL_ADMIN_PASSWORD_<i> per instance)
+- name: Read NR_CLI_MSSQL_SECRETS_FILE from play environment
+  loop: "{{ environment }}"
+  ansible.builtin.set_fact:
+    mssql_otel_secrets_file: "{{ item.NR_CLI_MSSQL_SECRETS_FILE }}"
+  when:
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - item.NR_CLI_MSSQL_SECRETS_FILE is defined
+  no_log: true
+
+- name: Assert NR_CLI_MSSQL_SECRETS_FILE exists in remote host if not found in playbook's environment
+  when:
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_secrets_file is undefined
+  ansible.builtin.assert:
+    that:
+      - ansible_env.NR_CLI_MSSQL_SECRETS_FILE is defined
+    fail_msg: >-
+      NR_CLI_MSSQL_SECRETS_FILE environment variable is not set. It must point to a
+      KEY=VALUE file (already present on the target host) with the per-instance admin
+      credentials used once to create the monitoring login.
+
+- name: Read NR_CLI_MSSQL_SECRETS_FILE from remote host environment
+  when:
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_secrets_file is undefined
+    - ansible_env.NR_CLI_MSSQL_SECRETS_FILE is defined
+  ansible.builtin.set_fact:
+    mssql_otel_secrets_file_from_host: "{{ ansible_env.NR_CLI_MSSQL_SECRETS_FILE }}"
+  no_log: true
+
+- name: Assert NR_CLI_MSSQL_SECRETS_FILE is not empty
+  when:
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_secrets_file is undefined
+    - mssql_otel_secrets_file_from_host is defined
+  ansible.builtin.assert:
+    that:
+      - mssql_otel_secrets_file_from_host != ''
+    fail_msg: "NR_CLI_MSSQL_SECRETS_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
+
+# NR_CLI_MSSQL_SERVER (required by nrdot-collector-mssql-rds-winauth only; that recipe is
+# untouched by the multi-instance work and still monitors a single AD-domain-joined RDS instance)
 - name: Read NR_CLI_MSSQL_SERVER from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
     mssql_otel_server: "{{ item.NR_CLI_MSSQL_SERVER }}"
   when:
-    - mssql_otel_rds_targeted
+    - mssql_otel_rds_winauth_targeted
     - item.NR_CLI_MSSQL_SERVER is defined
   no_log: true
 
 - name: Assert NR_CLI_MSSQL_SERVER exists in remote host if not found in playbook's environment
   when:
-    - mssql_otel_rds_targeted
+    - mssql_otel_rds_winauth_targeted
     - mssql_otel_server is undefined
   ansible.builtin.assert:
     that:
@@ -66,7 +110,7 @@
 
 - name: Read NR_CLI_MSSQL_SERVER from remote host environment
   when:
-    - mssql_otel_rds_targeted
+    - mssql_otel_rds_winauth_targeted
     - mssql_otel_server is undefined
     - ansible_env.NR_CLI_MSSQL_SERVER is defined
   ansible.builtin.set_fact:
@@ -74,93 +118,13 @@
 
 - name: Assert NR_CLI_MSSQL_SERVER is not empty
   when:
-    - mssql_otel_rds_targeted
+    - mssql_otel_rds_winauth_targeted
     - mssql_otel_server is undefined
     - mssql_otel_server_from_host is defined
   ansible.builtin.assert:
     that:
       - mssql_otel_server_from_host != ''
     fail_msg: "NR_CLI_MSSQL_SERVER is empty. It must be set under `environment` in the playbook or in the remote host"
-
-# NR_CLI_MSSQL_MASTER_USER (required by nrdot-collector-mssql-rds only; rds-winauth uses a
-# domain identity via an AD-joined RDS instance instead of RDS master credentials)
-- name: Read NR_CLI_MSSQL_MASTER_USER from play environment
-  loop: "{{ environment }}"
-  ansible.builtin.set_fact:
-    mssql_otel_master_user: "{{ item.NR_CLI_MSSQL_MASTER_USER }}"
-  when:
-    - "'mssql-otel-rds' in targets"
-    - item.NR_CLI_MSSQL_MASTER_USER is defined
-  no_log: true
-
-- name: Assert NR_CLI_MSSQL_MASTER_USER exists in remote host if not found in playbook's environment
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_user is undefined
-  ansible.builtin.assert:
-    that:
-      - ansible_env.NR_CLI_MSSQL_MASTER_USER is defined
-    fail_msg: >-
-      NR_CLI_MSSQL_MASTER_USER environment variable is not set. The RDS master username
-      is required to create the monitoring login for the mssql-otel-rds target.
-
-- name: Read NR_CLI_MSSQL_MASTER_USER from remote host environment
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_user is undefined
-    - ansible_env.NR_CLI_MSSQL_MASTER_USER is defined
-  ansible.builtin.set_fact:
-    mssql_otel_master_user_from_host: "{{ ansible_env.NR_CLI_MSSQL_MASTER_USER }}"
-
-- name: Assert NR_CLI_MSSQL_MASTER_USER is not empty
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_user is undefined
-    - mssql_otel_master_user_from_host is defined
-  ansible.builtin.assert:
-    that:
-      - mssql_otel_master_user_from_host != ''
-    fail_msg: "NR_CLI_MSSQL_MASTER_USER is empty. It must be set under `environment` in the playbook or in the remote host"
-
-# NR_CLI_MSSQL_MASTER_PASSWORD (required by nrdot-collector-mssql-rds only)
-- name: Read NR_CLI_MSSQL_MASTER_PASSWORD from play environment
-  loop: "{{ environment }}"
-  ansible.builtin.set_fact:
-    mssql_otel_master_password: "{{ item.NR_CLI_MSSQL_MASTER_PASSWORD }}"
-  when:
-    - "'mssql-otel-rds' in targets"
-    - item.NR_CLI_MSSQL_MASTER_PASSWORD is defined
-  no_log: true
-
-- name: Assert NR_CLI_MSSQL_MASTER_PASSWORD exists in remote host if not found in playbook's environment
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_password is undefined
-  ansible.builtin.assert:
-    that:
-      - ansible_env.NR_CLI_MSSQL_MASTER_PASSWORD is defined
-    fail_msg: >-
-      NR_CLI_MSSQL_MASTER_PASSWORD environment variable is not set. The RDS master password
-      is required to create the monitoring login for the mssql-otel-rds target.
-
-- name: Read NR_CLI_MSSQL_MASTER_PASSWORD from remote host environment
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_password is undefined
-    - ansible_env.NR_CLI_MSSQL_MASTER_PASSWORD is defined
-  ansible.builtin.set_fact:
-    mssql_otel_master_password_from_host: "{{ ansible_env.NR_CLI_MSSQL_MASTER_PASSWORD }}"
-  no_log: true
-
-- name: Assert NR_CLI_MSSQL_MASTER_PASSWORD is not empty
-  when:
-    - "'mssql-otel-rds' in targets"
-    - mssql_otel_master_password is undefined
-    - mssql_otel_master_password_from_host is defined
-  ansible.builtin.assert:
-    that:
-      - mssql_otel_master_password_from_host != ''
-    fail_msg: "NR_CLI_MSSQL_MASTER_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
 
 # NR_CLI_MSSQL_AUTH_MODE (optional, default "1"; only meaningful for the winauth recipes,
 # where it selects Windows Domain Auth ("1") vs gMSA ("2"))
