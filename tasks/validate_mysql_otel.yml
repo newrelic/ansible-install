@@ -3,159 +3,87 @@
   ansible.builtin.set_fact:
     mysql_otel_selfhosted_targeted: "{{ 'mysql-otel' in targets }}"
     mysql_otel_rds_targeted: "{{ 'mysql-otel-rds' in targets }}"
+    mysql_otel_targeted: "{{ 'mysql-otel' in targets or 'mysql-otel-rds' in targets }}"
 
-# NR_CLI_MYSQL_ROOT_PASSWORD (required by nrdot-collector-mysql only; the RDS recipe
-# uses RDS master credentials instead of a local root login)
-- name: Read NR_CLI_MYSQL_ROOT_PASSWORD from play environment
+# NR_CLI_MYSQL_INSTANCES_FILE (required by both nrdot-collector-mysql and
+# nrdot-collector-mysql-rds; a YAML file listing every MySQL instance to monitor -
+# host/port/login_name per entry.)
+- name: Read NR_CLI_MYSQL_INSTANCES_FILE from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    mysql_otel_root_password: "{{ item.NR_CLI_MYSQL_ROOT_PASSWORD }}"
+    mysql_otel_instances_file: "{{ item.NR_CLI_MYSQL_INSTANCES_FILE }}"
   when:
-    - mysql_otel_selfhosted_targeted
-    - item.NR_CLI_MYSQL_ROOT_PASSWORD is defined
-  no_log: true
+    - mysql_otel_targeted
+    - item.NR_CLI_MYSQL_INSTANCES_FILE is defined
 
-- name: Assert NR_CLI_MYSQL_ROOT_PASSWORD exists in remote host if not found in playbook's environment
+- name: Assert NR_CLI_MYSQL_INSTANCES_FILE exists in remote host if not found in playbook's environment
   when:
-    - mysql_otel_selfhosted_targeted
-    - mysql_otel_root_password is undefined
+    - mysql_otel_targeted
+    - mysql_otel_instances_file is undefined
   ansible.builtin.assert:
     that:
-      - ansible_env.NR_CLI_MYSQL_ROOT_PASSWORD is defined
-    fail_msg: "NR_CLI_MYSQL_ROOT_PASSWORD environment variable is not set. It is required for the mysql-otel target."
-
-- name: Read NR_CLI_MYSQL_ROOT_PASSWORD from remote host environment
-  when:
-    - mysql_otel_selfhosted_targeted
-    - mysql_otel_root_password is undefined
-    - ansible_env.NR_CLI_MYSQL_ROOT_PASSWORD is defined
-  ansible.builtin.set_fact:
-    mysql_otel_root_password_from_host: "{{ ansible_env.NR_CLI_MYSQL_ROOT_PASSWORD }}"
-  no_log: true
-
-- name: Assert NR_CLI_MYSQL_ROOT_PASSWORD is not empty
-  when:
-    - mysql_otel_selfhosted_targeted
-    - mysql_otel_root_password is undefined
-    - mysql_otel_root_password_from_host is defined
-  ansible.builtin.assert:
-    that:
-      - mysql_otel_root_password_from_host != ''
-    fail_msg: "NR_CLI_MYSQL_ROOT_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
-
-# NR_CLI_MYSQL_SERVER (required by nrdot-collector-mysql-rds only; the self-hosted
-# recipe defaults this to "localhost")
-- name: Read NR_CLI_MYSQL_SERVER from play environment
-  loop: "{{ environment }}"
-  ansible.builtin.set_fact:
-    mysql_otel_server: "{{ item.NR_CLI_MYSQL_SERVER }}"
-  when:
-    - mysql_otel_rds_targeted
-    - item.NR_CLI_MYSQL_SERVER is defined
-  no_log: true
-
-- name: Assert NR_CLI_MYSQL_SERVER exists in remote host if not found in playbook's environment
-  when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_server is undefined
-  ansible.builtin.assert:
-    that:
-      - ansible_env.NR_CLI_MYSQL_SERVER is defined
-    fail_msg: "NR_CLI_MYSQL_SERVER environment variable is not set. The mysql-otel-rds recipe has no default host, unlike the self-hosted recipe."
-
-- name: Read NR_CLI_MYSQL_SERVER from remote host environment
-  when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_server is undefined
-    - ansible_env.NR_CLI_MYSQL_SERVER is defined
-  ansible.builtin.set_fact:
-    mysql_otel_server_from_host: "{{ ansible_env.NR_CLI_MYSQL_SERVER }}"
-
-- name: Assert NR_CLI_MYSQL_SERVER is not empty
-  when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_server is undefined
-    - mysql_otel_server_from_host is defined
-  ansible.builtin.assert:
-    that:
-      - mysql_otel_server_from_host != ''
-    fail_msg: "NR_CLI_MYSQL_SERVER is empty. It must be set under `environment` in the playbook or in the remote host"
-
-# NR_CLI_MYSQL_MASTER_USER (required by nrdot-collector-mysql-rds only)
-- name: Read NR_CLI_MYSQL_MASTER_USER from play environment
-  loop: "{{ environment }}"
-  ansible.builtin.set_fact:
-    mysql_otel_master_user: "{{ item.NR_CLI_MYSQL_MASTER_USER }}"
-  when:
-    - mysql_otel_rds_targeted
-    - item.NR_CLI_MYSQL_MASTER_USER is defined
-  no_log: true
-
-- name: Assert NR_CLI_MYSQL_MASTER_USER exists in remote host if not found in playbook's environment
-  when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_user is undefined
-  ansible.builtin.assert:
-    that:
-      - ansible_env.NR_CLI_MYSQL_MASTER_USER is defined
+      - ansible_env.NR_CLI_MYSQL_INSTANCES_FILE is defined
     fail_msg: >-
-      NR_CLI_MYSQL_MASTER_USER environment variable is not set. The RDS master username
-      is required to create the monitoring user for the mysql-otel-rds target.
+      NR_CLI_MYSQL_INSTANCES_FILE environment variable is not set. It must point to a YAML
+      file (already present on the target host) listing the MySQL instance(s) to monitor.
 
-- name: Read NR_CLI_MYSQL_MASTER_USER from remote host environment
+- name: Read NR_CLI_MYSQL_INSTANCES_FILE from remote host environment
   when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_user is undefined
-    - ansible_env.NR_CLI_MYSQL_MASTER_USER is defined
+    - mysql_otel_targeted
+    - mysql_otel_instances_file is undefined
+    - ansible_env.NR_CLI_MYSQL_INSTANCES_FILE is defined
   ansible.builtin.set_fact:
-    mysql_otel_master_user_from_host: "{{ ansible_env.NR_CLI_MYSQL_MASTER_USER }}"
+    mysql_otel_instances_file_from_host: "{{ ansible_env.NR_CLI_MYSQL_INSTANCES_FILE }}"
 
-- name: Assert NR_CLI_MYSQL_MASTER_USER is not empty
+- name: Assert NR_CLI_MYSQL_INSTANCES_FILE is not empty
   when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_user is undefined
-    - mysql_otel_master_user_from_host is defined
+    - mysql_otel_targeted
+    - mysql_otel_instances_file is undefined
+    - mysql_otel_instances_file_from_host is defined
   ansible.builtin.assert:
     that:
-      - mysql_otel_master_user_from_host != ''
-    fail_msg: "NR_CLI_MYSQL_MASTER_USER is empty. It must be set under `environment` in the playbook or in the remote host"
+      - mysql_otel_instances_file_from_host != ''
+    fail_msg: "NR_CLI_MYSQL_INSTANCES_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
 
-# NR_CLI_MYSQL_MASTER_PASSWORD (required by nrdot-collector-mysql-rds only)
-- name: Read NR_CLI_MYSQL_MASTER_PASSWORD from play environment
+# NR_CLI_MYSQL_SECRETS_FILE (required by both nrdot-collector-mysql and
+# nrdot-collector-mysql-rds; KEY=VALUE per line, NR_CLI_MYSQL_ADMIN_USER_<i>/
+# NR_CLI_MYSQL_ADMIN_PASSWORD_<i> per instance, indexed to the instances file's order)
+- name: Read NR_CLI_MYSQL_SECRETS_FILE from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    mysql_otel_master_password: "{{ item.NR_CLI_MYSQL_MASTER_PASSWORD }}"
+    mysql_otel_secrets_file: "{{ item.NR_CLI_MYSQL_SECRETS_FILE }}"
   when:
-    - mysql_otel_rds_targeted
-    - item.NR_CLI_MYSQL_MASTER_PASSWORD is defined
+    - mysql_otel_targeted
+    - item.NR_CLI_MYSQL_SECRETS_FILE is defined
   no_log: true
 
-- name: Assert NR_CLI_MYSQL_MASTER_PASSWORD exists in remote host if not found in playbook's environment
+- name: Assert NR_CLI_MYSQL_SECRETS_FILE exists in remote host if not found in playbook's environment
   when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_password is undefined
+    - mysql_otel_targeted
+    - mysql_otel_secrets_file is undefined
   ansible.builtin.assert:
     that:
-      - ansible_env.NR_CLI_MYSQL_MASTER_PASSWORD is defined
+      - ansible_env.NR_CLI_MYSQL_SECRETS_FILE is defined
     fail_msg: >-
-      NR_CLI_MYSQL_MASTER_PASSWORD environment variable is not set. The RDS master password
-      is required to create the monitoring user for the mysql-otel-rds target.
+      NR_CLI_MYSQL_SECRETS_FILE environment variable is not set. It must point to a
+      KEY=VALUE file (already present on the target host) with the per-instance admin
+      credentials used once to create the monitoring user.
 
-- name: Read NR_CLI_MYSQL_MASTER_PASSWORD from remote host environment
+- name: Read NR_CLI_MYSQL_SECRETS_FILE from remote host environment
   when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_password is undefined
-    - ansible_env.NR_CLI_MYSQL_MASTER_PASSWORD is defined
+    - mysql_otel_targeted
+    - mysql_otel_secrets_file is undefined
+    - ansible_env.NR_CLI_MYSQL_SECRETS_FILE is defined
   ansible.builtin.set_fact:
-    mysql_otel_master_password_from_host: "{{ ansible_env.NR_CLI_MYSQL_MASTER_PASSWORD }}"
+    mysql_otel_secrets_file_from_host: "{{ ansible_env.NR_CLI_MYSQL_SECRETS_FILE }}"
   no_log: true
 
-- name: Assert NR_CLI_MYSQL_MASTER_PASSWORD is not empty
+- name: Assert NR_CLI_MYSQL_SECRETS_FILE is not empty
   when:
-    - mysql_otel_rds_targeted
-    - mysql_otel_master_password is undefined
-    - mysql_otel_master_password_from_host is defined
+    - mysql_otel_targeted
+    - mysql_otel_secrets_file is undefined
+    - mysql_otel_secrets_file_from_host is defined
   ansible.builtin.assert:
     that:
-      - mysql_otel_master_password_from_host != ''
-    fail_msg: "NR_CLI_MYSQL_MASTER_PASSWORD is empty. It must be set under `environment` in the playbook or in the remote host"
+      - mysql_otel_secrets_file_from_host != ''
+    fail_msg: "NR_CLI_MYSQL_SECRETS_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
