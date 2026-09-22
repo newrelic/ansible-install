@@ -80,6 +80,7 @@ List of targeted installs to run on hosts. Available options are:
 - `nginx` (Linux)
 - `oracle-otel` (Linux, self-hosted Oracle on RHEL/OEL)
 - `oracle-otel-rds` (Linux, Oracle on AWS RDS, collector host on Debian/Ubuntu or RHEL/CentOS/OEL)
+- `oracle-otel-adb` (Linux, Oracle Autonomous Database (ADB), collector host on Debian/Ubuntu or RHEL/CentOS/OEL)
 
 Important Notes:
 
@@ -278,6 +279,27 @@ An instance that fails its checks is skipped rather than aborting the whole inst
 - `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
 - `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS Oracle instance to monitor: `host` / `port` / `service` / `login_name` per entry.
 - `NR_CLI_ORACLE_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring user: `NR_CLI_ORACLE_ADMIN_USER_<i>` / `NR_CLI_ORACLE_ADMIN_PASSWORD_<i>` (both required for every instance). `NR_CLI_ORACLE_LOGIN_PASSWORD_<i>` is optional per instance (leave unset to auto-generate).
+
+#### `oracle-otel-adb` (Oracle Autonomous Database (ADB)) — supports monitoring multiple instances from one collector:
+
+- `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every ADB instance to monitor. `host` / `port` / `service` come from each instance's ADB connection string (Database connection → Connection strings); `wallet_dir` is the directory where that instance's Oracle Wallet was unzipped (ADB console → Database connection → Download wallet — do not share one wallet directory between different ADB instances), e.g.:
+  ```yaml
+  instances:
+    - host: adb1.adb.us-ashburn-1.oraclecloud.com
+      port: 1522
+      service: myadb1_high
+      login_name: newrelic
+      wallet_dir: /home/opc/wallet1
+    - host: adb2.adb.us-ashburn-1.oraclecloud.com
+      port: 1522
+      service: myadb2_high
+      login_name: newrelic
+      wallet_dir: /home/opc/wallet2
+  ```
+  Each instance connects using mutual TLS (ADB's default); make sure each collector host's egress IP is allowed in the corresponding ADB access control list, and that Oracle SQL*Plus (Instant Client) is installed and on `PATH`.
+- `NR_CLI_ORACLE_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the ADB admin credentials used once per instance to create the monitoring user: `NR_CLI_ORACLE_ADMIN_USER_<i>` / `NR_CLI_ORACLE_ADMIN_PASSWORD_<i>` (both required for every instance, indexed to match the instances file order). `NR_CLI_ORACLE_LOGIN_PASSWORD_<i>` is optional per instance (leave unset to auto-generate).
+
+An instance that fails its checks (version check, wallet lookup, or user setup) is skipped rather than aborting the whole install — the install only fails if zero instances survive.
 
 See [ansible's remote environment](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) for more info.
 
