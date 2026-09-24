@@ -3,23 +3,25 @@
   ansible.builtin.set_fact:
     mssql_otel_selfhosted_sqlauth_targeted: "{{ 'mssql-otel' in targets }}"
     mssql_otel_rds_sqlauth_targeted: "{{ 'mssql-otel-rds' in targets }}"
+    mssql_otel_selfhosted_winauth_targeted: "{{ 'mssql-otel-winauth' in targets }}"
     mssql_otel_rds_winauth_targeted: "{{ 'mssql-otel-rds-winauth' in targets }}"
     mssql_otel_winauth_targeted: "{{ 'mssql-otel-winauth' in targets or 'mssql-otel-rds-winauth' in targets }}"
 
-# NR_CLI_MSSQL_INSTANCES_FILE (required by nrdot-collector-mssql and nrdot-collector-mssql-rds;
-# a YAML file listing every SQL Server instance to monitor - host/port/login_name per entry.
-# The winauth recipes are untouched by the multi-instance work and still take single-instance vars)
+# NR_CLI_MSSQL_INSTANCES_FILE (required by all four mssql-otel recipes; a YAML file listing
+# every SQL Server instance to monitor - host/port/login_name per entry for the SQL-auth
+# recipes, host/port only for the winauth recipes. The winauth recipes dropped their old
+# single-instance NR_CLI_MSSQL_SERVER/NR_CLI_MSSQL_PORT vars for this with no fallback)
 - name: Read NR_CLI_MSSQL_INSTANCES_FILE from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
     mssql_otel_instances_file: "{{ item.NR_CLI_MSSQL_INSTANCES_FILE }}"
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted or mssql_otel_winauth_targeted
     - item.NR_CLI_MSSQL_INSTANCES_FILE is defined
 
 - name: Assert NR_CLI_MSSQL_INSTANCES_FILE exists in remote host if not found in playbook's environment
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted or mssql_otel_winauth_targeted
     - mssql_otel_instances_file is undefined
   ansible.builtin.assert:
     that:
@@ -30,7 +32,7 @@
 
 - name: Read NR_CLI_MSSQL_INSTANCES_FILE from remote host environment
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted or mssql_otel_winauth_targeted
     - mssql_otel_instances_file is undefined
     - ansible_env.NR_CLI_MSSQL_INSTANCES_FILE is defined
   ansible.builtin.set_fact:
@@ -38,7 +40,7 @@
 
 - name: Assert NR_CLI_MSSQL_INSTANCES_FILE is not empty
   when:
-    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted
+    - mssql_otel_selfhosted_sqlauth_targeted or mssql_otel_rds_sqlauth_targeted or mssql_otel_winauth_targeted
     - mssql_otel_instances_file is undefined
     - mssql_otel_instances_file_from_host is defined
   ansible.builtin.assert:
@@ -88,43 +90,25 @@
       - mssql_otel_secrets_file_from_host != ''
     fail_msg: "NR_CLI_MSSQL_SECRETS_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
 
-# NR_CLI_MSSQL_SERVER (required by nrdot-collector-mssql-rds-winauth only; that recipe is
-# untouched by the multi-instance work and still monitors a single AD-domain-joined RDS instance)
-- name: Read NR_CLI_MSSQL_SERVER from play environment
+# NR_CLI_MSSQL_WINAUTH_LOCATION (optional, default "1"; self-hosted winauth only - "1" means
+# the collector runs on the same host as SQL Server (no domain identity needed, service stays
+# LocalSystem), "2" means a different host (requires NR_CLI_MSSQL_WIN_ACCOUNT/_WIN_PASSWORD).
+# The RDS winauth recipe has no location choice - it always needs a domain account.)
+- name: Read NR_CLI_MSSQL_WINAUTH_LOCATION from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    mssql_otel_server: "{{ item.NR_CLI_MSSQL_SERVER }}"
+    mssql_otel_winauth_location: "{{ item.NR_CLI_MSSQL_WINAUTH_LOCATION }}"
   when:
-    - mssql_otel_rds_winauth_targeted
-    - item.NR_CLI_MSSQL_SERVER is defined
-  no_log: true
+    - mssql_otel_selfhosted_winauth_targeted
+    - item.NR_CLI_MSSQL_WINAUTH_LOCATION is defined
 
-- name: Assert NR_CLI_MSSQL_SERVER exists in remote host if not found in playbook's environment
+- name: Read NR_CLI_MSSQL_WINAUTH_LOCATION from remote host environment
   when:
-    - mssql_otel_rds_winauth_targeted
-    - mssql_otel_server is undefined
-  ansible.builtin.assert:
-    that:
-      - ansible_env.NR_CLI_MSSQL_SERVER is defined
-    fail_msg: "NR_CLI_MSSQL_SERVER environment variable is not set. The RDS mssql-otel recipes have no default host, unlike the self-hosted recipes."
-
-- name: Read NR_CLI_MSSQL_SERVER from remote host environment
-  when:
-    - mssql_otel_rds_winauth_targeted
-    - mssql_otel_server is undefined
-    - ansible_env.NR_CLI_MSSQL_SERVER is defined
+    - mssql_otel_selfhosted_winauth_targeted
+    - mssql_otel_winauth_location is undefined
+    - ansible_env.NR_CLI_MSSQL_WINAUTH_LOCATION is defined
   ansible.builtin.set_fact:
-    mssql_otel_server_from_host: "{{ ansible_env.NR_CLI_MSSQL_SERVER }}"
-
-- name: Assert NR_CLI_MSSQL_SERVER is not empty
-  when:
-    - mssql_otel_rds_winauth_targeted
-    - mssql_otel_server is undefined
-    - mssql_otel_server_from_host is defined
-  ansible.builtin.assert:
-    that:
-      - mssql_otel_server_from_host != ''
-    fail_msg: "NR_CLI_MSSQL_SERVER is empty. It must be set under `environment` in the playbook or in the remote host"
+    mssql_otel_winauth_location: "{{ ansible_env.NR_CLI_MSSQL_WINAUTH_LOCATION }}"
 
 # NR_CLI_MSSQL_AUTH_MODE (optional, default "1"; only meaningful for the winauth recipes,
 # where it selects Windows Domain Auth ("1") vs gMSA ("2"))
@@ -180,10 +164,15 @@
     mssql_otel_win_password: "{{ ansible_env.NR_CLI_MSSQL_WIN_PASSWORD }}"
   no_log: true
 
+# Required whenever the RDS winauth recipe uses Windows Domain Auth (no location choice there),
+# and for self-hosted winauth Windows Domain Auth only when the collector runs on a different
+# host than SQL Server (NR_CLI_MSSQL_WINAUTH_LOCATION == "2"); not required for self-hosted
+# "same host" (location "1", the default), where the service stays LocalSystem.
 - name: Assert Windows Domain Auth credentials are set when NR_CLI_MSSQL_AUTH_MODE is 1
   when:
     - mssql_otel_winauth_targeted
     - (mssql_otel_auth_mode | default('1')) == '1'
+    - mssql_otel_rds_winauth_targeted or (mssql_otel_winauth_location | default('1')) == '2'
   ansible.builtin.assert:
     that:
       - mssql_otel_win_account is defined
@@ -192,8 +181,9 @@
       - mssql_otel_win_password | trim != ''
     fail_msg: >-
       NR_CLI_MSSQL_WIN_ACCOUNT and NR_CLI_MSSQL_WIN_PASSWORD are required when
-      NR_CLI_MSSQL_AUTH_MODE is 1 (Windows Domain Auth). Set these under `environment`
-      in the playbook or in the remote host.
+      NR_CLI_MSSQL_AUTH_MODE is 1 (Windows Domain Auth) for mssql-otel-rds-winauth, or for
+      mssql-otel-winauth when NR_CLI_MSSQL_WINAUTH_LOCATION is 2 (different host). Set these
+      under `environment` in the playbook or in the remote host.
 
 # NR_CLI_MSSQL_GMSA_ACCOUNT (required by the winauth recipes when NR_CLI_MSSQL_AUTH_MODE is "2", gMSA)
 - name: Read NR_CLI_MSSQL_GMSA_ACCOUNT from play environment
