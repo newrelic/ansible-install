@@ -21,6 +21,7 @@ target_name_map:
   postgresql-otel-rds: nrdot-collector-postgresql-rds
   oracle-otel: nrdot-collector-oracle
   oracle-otel-rds: nrdot-collector-oracle-rds
+  oracle-otel-adb: nrdot-collector-oracle-adb
   nginx: nginx-open-source-integration
   agent-control: agent-control
   logs-agent-control: logs-integration-agent-control

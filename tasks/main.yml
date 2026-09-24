@@ -28,7 +28,7 @@
   run_once: true
   when:
     - os_name != 'windows'
-    - '"oracle-otel" in targets or "oracle-otel-rds" in targets'
+    - '"oracle-otel" in targets or "oracle-otel-rds" in targets or "oracle-otel-adb" in targets'
 - name: Validate mssql-otel required variables
   ansible.builtin.import_tasks: validate_mssql_otel.yml
   run_once: true

@@ -3,11 +3,16 @@
   ansible.builtin.set_fact:
     oracle_otel_selfhosted_targeted: "{{ 'oracle-otel' in targets }}"
     oracle_otel_rds_targeted: "{{ 'oracle-otel-rds' in targets }}"
-    oracle_otel_targeted: "{{ 'oracle-otel' in targets or 'oracle-otel-rds' in targets }}"
+    oracle_otel_adb_targeted: "{{ 'oracle-otel-adb' in targets }}"
+    oracle_otel_targeted: "{{ 'oracle-otel' in targets or 'oracle-otel-rds' in targets or 'oracle-otel-adb' in targets }}"
+    # RDS and ADB both authenticate as an admin user to create the monitoring identity, so both
+    # require NR_CLI_ORACLE_SECRETS_FILE; self-hosted uses SSH + OS-level SYSDBA access instead.
+    oracle_otel_secrets_required_targeted: "{{ 'oracle-otel-rds' in targets or 'oracle-otel-adb' in targets }}"
 
-# NR_CLI_ORACLE_INSTANCES_FILE (required by both nrdot-collector-oracle and
-# nrdot-collector-oracle-rds; a YAML file listing every Oracle Database instance to monitor -
-# host/port/service/login_name per entry, plus ssh_user/container_type/pdb_name for self-hosted)
+# NR_CLI_ORACLE_INSTANCES_FILE (required by nrdot-collector-oracle, nrdot-collector-oracle-rds and
+# nrdot-collector-oracle-adb; a YAML file listing every Oracle Database instance to monitor -
+# host/port/service/login_name per entry, plus ssh_user/container_type/pdb_name for self-hosted,
+# or wallet_dir (path to that instance's unzipped Oracle Wallet) for ADB)
 - name: Read NR_CLI_ORACLE_INSTANCES_FILE from play environment
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
@@ -45,8 +50,8 @@
       - oracle_otel_instances_file_from_host != ''
     fail_msg: "NR_CLI_ORACLE_INSTANCES_FILE is empty. It must be set under `environment` in the playbook or in the remote host"
 
-# NR_CLI_ORACLE_SECRETS_FILE (required by nrdot-collector-oracle-rds only, holding
-# NR_CLI_ORACLE_ADMIN_USER_<i>/NR_CLI_ORACLE_ADMIN_PASSWORD_<i> per instance; optional for
+# NR_CLI_ORACLE_SECRETS_FILE (required by nrdot-collector-oracle-rds and nrdot-collector-oracle-adb,
+# holding NR_CLI_ORACLE_ADMIN_USER_<i>/NR_CLI_ORACLE_ADMIN_PASSWORD_<i> per instance; optional for
 # self-hosted nrdot-collector-oracle, where the grant step authenticates via SSH + OS-level
 # SYSDBA access instead, and this file only lets you pin a per-instance monitoring password)
 - name: Read NR_CLI_ORACLE_SECRETS_FILE from play environment
@@ -60,19 +65,19 @@
 
 - name: Assert NR_CLI_ORACLE_SECRETS_FILE exists in remote host if not found in playbook's environment
   when:
-    - oracle_otel_rds_targeted
+    - oracle_otel_secrets_required_targeted
     - oracle_otel_secrets_file is undefined
   ansible.builtin.assert:
     that:
       - ansible_env.NR_CLI_ORACLE_SECRETS_FILE is defined
     fail_msg: >-
       NR_CLI_ORACLE_SECRETS_FILE environment variable is not set. It must point to a
-      KEY=VALUE file (already present on the target host) with the per-instance RDS master
-      credentials used once to create the monitoring user.
+      KEY=VALUE file (already present on the target host) with the per-instance RDS master or
+      ADB admin credentials used once to create the monitoring user.
 
 - name: Read NR_CLI_ORACLE_SECRETS_FILE from remote host environment
   when:
-    - oracle_otel_rds_targeted
+    - oracle_otel_secrets_required_targeted
     - oracle_otel_secrets_file is undefined
     - ansible_env.NR_CLI_ORACLE_SECRETS_FILE is defined
   ansible.builtin.set_fact:
@@ -81,7 +86,7 @@
 
 - name: Assert NR_CLI_ORACLE_SECRETS_FILE is not empty
   when:
-    - oracle_otel_rds_targeted
+    - oracle_otel_secrets_required_targeted
     - oracle_otel_secrets_file is undefined
     - oracle_otel_secrets_file_from_host is defined
   ansible.builtin.assert:
