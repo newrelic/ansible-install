@@ -172,22 +172,23 @@ A bad instance (wrong password, unsupported SQL Server version, failed login set
 - `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS SQL Server instance to monitor, same format as `mssql-otel` above but with RDS endpoints as `host`.
 - `NR_CLI_MSSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring login: `NR_CLI_MSSQL_ADMIN_USER_<i>` / `NR_CLI_MSSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
 
-#### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA):
+#### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
-- `NR_CLI_MSSQL_SERVER` (optional) SQL Server host. Defaults to `localhost`
-- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
-- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_WINAUTH_LOCATION` (optional, Windows Domain Auth only) `1` if the collector runs on the same host as SQL Server, `2` if it runs on a different host. Defaults to `1`.
+- `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every SQL Server instance to monitor (`host`/`port` per entry — no per-instance secrets file, since Windows Auth doesn't need per-instance credentials). Replaces the old single-instance `NR_CLI_MSSQL_SERVER`/`NR_CLI_MSSQL_PORT` vars, which have been removed with no fallback.
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** only when `NR_CLI_MSSQL_AUTH_MODE` is `1` **and** `NR_CLI_MSSQL_WINAUTH_LOCATION` is `2`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as. Not needed for the "same host" flow (`WINAUTH_LOCATION` `1`) — the service stays `LocalSystem` and the installing user's identity is used.
 - `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
 
-#### `mssql-otel-rds-winauth` (AWS RDS SQL Server joined to an AWS Managed AD domain, Windows Domain Auth or gMSA):
+One auth mode and one Windows identity apply to the whole install — every instance in the file is monitored under that same identity. An invalid host/port, a duplicate `host:port`, or an instance that fails its version check or grant step is skipped rather than aborting the whole install.
+
+#### `mssql-otel-rds-winauth` (AWS RDS SQL Server joined to an AWS Managed AD domain, Windows Domain Auth or gMSA) — supports monitoring multiple instances from one collector:
 
 - `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
-- `NR_CLI_MSSQL_SERVER` (**required**) The RDS SQL Server endpoint. Unlike the self-hosted recipe, there is no default.
-- `NR_CLI_MSSQL_PORT` (optional) SQL Server port. Defaults to `1433`
-- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as
+- `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS SQL Server instance to monitor (`host`/`port` per entry). Replaces the old single-instance `NR_CLI_MSSQL_SERVER`/`NR_CLI_MSSQL_PORT` vars, which have been removed with no fallback.
+- `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as. Unlike the self-hosted recipe, there is no "same host" option here — a domain account is always required for Windows Domain Auth.
 - `NR_CLI_MSSQL_GMSA_ACCOUNT` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `2`) gMSA account (`DOMAIN\gMSAName$`) to grant permissions to
 
 #### `mysql`:
