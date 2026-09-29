@@ -1,47 +1,307 @@
-name: Release
-"on":
-  push:
-    tags:
-      - "v*"
+---
+# yamllint disable rule:line-length
+# Shell scripts embedded in workflow run: blocks routinely exceed 80 chars.
+# Line-length is suppressed for this file only; all other rules still apply.
 
+# Release workflow for the newrelic_install Ansible role.
+#
+# Trigger: manually via Actions → Release → Run workflow.
+#
+# Version model: this role's version lives entirely in Git tags (v0.9.1).
+# There is no version field in meta/main.yml. This workflow creates the tag,
+# creates the GitHub Release with a generated changelog, imports to Ansible
+# Galaxy, verifies propagation, then commits a release marker to main.
+#
+# Ansible Galaxy does not enforce semantic versioning — the tag is an opaque
+# string. Semver is followed by convention. Default auto-increment bumps the
+# patch field; use specify_version=true for intentional minor or major bumps.
+#
+# Two modes, controlled by the specify_version checkbox:
+#
+#   specify_version = false  (default — auto-increment patch)
+#     Reads the latest tag, increments the patch by 1, creates v{new} tag.
+#
+#   specify_version = true  (explicit version)
+#     Uses the version entered below — validates it strictly exceeds the
+#     latest tag. Use this for minor (0.9.x → 0.10.0) or major bumps.
+#
+# skip_tag_push skips tag and GitHub Release creation (use when the tag is
+# already pushed and only Galaxy import + marker commit need to run).
+#
+# Required secrets:
+#   GALAXY_API_KEY  — Ansible Galaxy API token (always required).
+#   RELEASE_TOKEN   — nr-developer-toolkit PAT with admin bypass on the org
+#                     Branch Protection ruleset. Required for the release
+#                     marker commit pushed directly to main at the end.
+#                     Tag pushes bypass branch protection; main commits do not.
+name: Release
+
+# contents: write — tag creation, tag push, GitHub Release, and main commit.
 permissions:
-  contents: read
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      specify_version:
+        description: >-
+          📋 Updated Sep 2026: creates Git tag, changelog, GitHub Release,
+          Galaxy import & release marker on main — no manual tagging needed.
+          Leave unchecked to auto-increment patch. Check to enter a specific
+          version below (use for minor/major bumps, e.g. 0.10.0).
+        type: boolean
+        required: false
+        default: false
+      version:
+        description: 'Explicit version (e.g. 0.10.0) — only used when "Specify version" is checked. Leave blank otherwise.'
+        type: string
+        required: false
+        default: ''
+      skip_tag_push:
+        description: 'Skip tag and release creation — use when tag already exists and only Galaxy import + marker commit need to run'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
-  github-release:
-    name: Create GitHub Release
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    name: "🚀 Release: Publish newrelic_install to Ansible Galaxy"
+    # Checkout + tag + gh release + Galaxy import (synchronous) + verify poll + main commit.
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Get Release Changes
-        id: recentCommits
-        run: |
-          echo ::set-output name=release_body::$(git log --no-merges --pretty=format:'%s' $(git describe --abbrev=0 --tags)...HEAD)
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Full tag history is required: the Resolve step reads the latest tag via
+      # git describe, and the Release step builds the changelog via git log.
+      # RELEASE_TOKEN is used so the final marker commit can push to main — the
+      # same org-level Branch Protection ruleset that governs chef-install applies
+      # here. Tag pushes don't need it; main branch commits do.
+      - name: "📦 Checkout: Fetch main with Full Tag History"
+        uses: actions/checkout@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: ${{steps.recentCommits.outputs.release_body}}
-          draft: false
-          prerelease: false
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
 
-  galaxy-import:
-    name: Galaxy Import
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: galaxy
+      # Reads the latest semver tag from git and determines the version to release.
+      # Auto mode increments the patch by 1. Explicit mode uses the provided value.
+      # Enforces mutual exclusivity: the version field and specify_version checkbox
+      # must agree — contradictory inputs fail immediately with a clear message.
+      - name: "🔢 Resolve: Determine Release Version from Latest Tag"
+        run: |
+          set -euo pipefail
+          SPECIFY="${{ github.event.inputs.specify_version }}"
+          INPUT="${{ github.event.inputs.version }}"
+          SKIP_TAG="${{ github.event.inputs.skip_tag_push }}"
+
+          # Read the latest tag; fall back to v0.0.0 on a brand-new repo.
+          LATEST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v0.0.0")
+          PREV_VERSION="${LATEST_TAG#v}"
+          IFS='.' read -r VMAJOR VMINOR VPATCH <<< "$PREV_VERSION"
+
+          if [ "$SPECIFY" = "true" ]; then
+            # Explicit mode: version field must be filled.
+            if [ -z "$INPUT" ]; then
+              echo "::error::❌ 'Specify version' is checked but no version was entered."
+              echo "::error::   Fill in the version field (e.g. $VMAJOR.$VMINOR.$((VPATCH + 1))), or uncheck to auto-increment."
+              exit 1
+            fi
+            VERSION="$INPUT"
+            echo "ℹ️ Using explicit version: $VERSION"
+          else
+            # Auto mode: version field must be blank.
+            if [ -n "$INPUT" ]; then
+              echo "::error::❌ A version was entered but 'Specify version' is not checked — contradictory inputs."
+              echo "::error::   Either check 'Specify version' to use '$INPUT', or clear the field to auto-increment."
+              exit 1
+            fi
+            if [ "$SKIP_TAG" = "true" ]; then
+              # Re-publish: use the existing latest tag version unchanged.
+              VERSION="$PREV_VERSION"
+              echo "ℹ️ Skip-tag mode: republishing existing latest version: $VERSION"
+            else
+              # Auto-increment the patch field.
+              VERSION="$VMAJOR.$VMINOR.$((VPATCH + 1))"
+              echo "ℹ️ Auto-incrementing patch: $PREV_VERSION → $VERSION"
+            fi
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "PREV_TAG=$LATEST_TAG" >> "$GITHUB_ENV"
+
+      # Validates both required secrets before any irreversible step (tag creation).
+      # GALAXY_API_KEY missing would only surface at publish time — after tag and
+      # GitHub Release already exist. RELEASE_TOKEN missing would only surface at
+      # the final marker commit. Catching both here fails fast and cleanly.
+      - name: "🔐 Pre-flight: Verify Required Secrets are Configured"
+        env:
+          GALAXY_KEY_SET: ${{ secrets.GALAXY_API_KEY != '' }}
+          RELEASE_TOKEN_SET: ${{ secrets.RELEASE_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          FAILED=false
+
+          if [ "$GALAXY_KEY_SET" != "true" ]; then
+            echo "::error::❌ GALAXY_API_KEY is not configured."
+            echo "::error::   Add it at: https://github.com/newrelic/ansible-install/settings/secrets/actions"
+            FAILED=true
+          else
+            echo "✅ GALAXY_API_KEY is present."
+          fi
+
+          if [ "$RELEASE_TOKEN_SET" != "true" ]; then
+            echo "::error::❌ RELEASE_TOKEN is not configured."
+            echo "::error::   Required to push the release marker commit directly to main."
+            echo "::error::   Add nr-developer-toolkit's PAT at: https://github.com/newrelic/ansible-install/settings/secrets/actions"
+            FAILED=true
+          else
+            echo "✅ RELEASE_TOKEN is present — marker commit will authenticate as nr-developer-toolkit."
+          fi
+
+          [ "$FAILED" = "true" ] && exit 1 || true
+
+      # Format guard (major.minor.patch, no v prefix — added when tagging).
+      # Bump mode: version must strictly exceed the latest tag using pure-bash semver comparison.
+      # Skip-tag mode: the corresponding tag must already exist in the repo.
+      - name: "🔍 Validate: Verify Version Format and Tag State"
+        run: |
+          set -euo pipefail
+          SKIP_TAG="${{ github.event.inputs.skip_tag_push }}"
+
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::❌ Invalid version '$VERSION' — must follow major.minor.patch semver (e.g. 0.9.1)."
+            echo "::error::   Current latest tag: $PREV_TAG"
+            exit 1
+          fi
+
+          if [ "$SKIP_TAG" = "true" ]; then
+            # Tag must already exist.
+            if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
+              echo "::error::❌ Tag 'v$VERSION' does not exist — cannot skip tag creation."
+              echo "::error::   Re-run with skip_tag_push=false to create the tag first."
+              exit 1
+            fi
+            echo "✅ Skip-tag mode: tag 'v$VERSION' confirmed — proceeding to publish."
+          else
+            # Pure-bash semver comparison — no external tools required.
+            PREV_VERSION="${PREV_TAG#v}"
+            IFS='.' read -r PA PB PC <<< "$PREV_VERSION"
+            IFS='.' read -r NA NB NC <<< "$VERSION"
+            NEWER=false
+            if   [ "$NA" -gt "$PA" ]; then NEWER=true
+            elif [ "$NA" -eq "$PA" ] && [ "$NB" -gt "$PB" ]; then NEWER=true
+            elif [ "$NA" -eq "$PA" ] && [ "$NB" -eq "$PB" ] && [ "$NC" -gt "$PC" ]; then NEWER=true
+            fi
+            if [ "$NEWER" = "false" ]; then
+              echo "::error::❌ 'v$VERSION' does not exceed the current latest tag '$PREV_TAG'."
+              echo "::error::   The new version must be strictly greater than $PREV_VERSION."
+              exit 1
+            fi
+            echo "✅ Bump mode: v$VERSION is valid — releasing $PREV_VERSION → $VERSION."
+          fi
+
+      # Creates an annotated tag and pushes it to origin.
+      # Tag pushes are not subject to branch protection rules — GITHUB_TOKEN
+      # with contents: write is sufficient; no PAT required for this step.
+      # Skipped when skip_tag_push=true.
+      - name: "🏷️ Tag: Create and Push Release Tag"
+        if: github.event.inputs.skip_tag_push != 'true'
+        run: |
+          set -euo pipefail
+          RELEASE_DATE=$(TZ="Asia/Kolkata" date +'%-d %B %Y')
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}, ${RELEASE_DATE}"
+          git push origin "v${VERSION}"
+          echo "✅ Tag v${VERSION} created and pushed."
+
+      # Creates a GitHub Release using gh CLI — replaces the deprecated
+      # actions/create-release@v1 and ::set-output pattern in the old workflow.
+      # Changelog is built from commit subjects between the previous tag and the new one.
+      # Skipped when skip_tag_push=true.
+      - name: "📋 Release: Create GitHub Release with Changelog"
+        if: github.event.inputs.skip_tag_push != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RELEASE_DATE=$(TZ="Asia/Kolkata" date +'%-d %B %Y')
+          CHANGELOG=$(git log --no-merges --pretty=format:'- %s (%h)' "${PREV_TAG}..v${VERSION}" 2>/dev/null || echo "- Initial release")
+
+          cat > /tmp/release-notes.md << NOTES
+          ## Changes since ${PREV_TAG}
+
+          ${CHANGELOG}
+
+          Released: ${RELEASE_DATE}
+          NOTES
+
+          gh release create "v${VERSION}" \
+            --title "Release v${VERSION}" \
+            --notes-file /tmp/release-notes.md \
+            --latest
+          echo "✅ GitHub Release v${VERSION} created."
+
+      # Imports the role to Ansible Galaxy. The action calls ansible-galaxy role import
+      # synchronously — it waits until Galaxy completes the import before returning.
+      # Galaxy detects the new tag and makes it available as the new version.
+      - name: "🌌 Publish: Import Role to Ansible Galaxy"
         uses: robertdebock/galaxy-action@1.2.1
         with:
           galaxy_api_key: ${{ secrets.GALAXY_API_KEY }}
           git_branch: main
+
+      # Polls the Ansible Galaxy v1 API until the new version tag appears.
+      # The import above is synchronous so this typically resolves immediately.
+      # Exits with ::warning:: on timeout — not a release failure.
+      - name: "🔎 Verify: Confirm Version is Live on Ansible Galaxy"
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          URL="https://galaxy.ansible.com/api/v1/roles/?owner__username=newrelic&name=newrelic_install&format=json"
+          MAX_ATTEMPTS=12
+          ATTEMPT=0
+
+          echo "Polling Ansible Galaxy for version '${TAG}'..."
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            VERSIONS=$(curl -s "$URL" | jq -r '.results[0].summary_fields.versions[].name' 2>/dev/null || echo "")
+            if echo "$VERSIONS" | grep -qF "$TAG"; then
+              echo "✅ Version '${TAG}' is live: https://galaxy.ansible.com/ui/standalone/roles/newrelic/newrelic_install/"
+              exit 0
+            fi
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS — not yet visible. Retrying in 15s..."
+            sleep 15
+          done
+
+          echo "::warning::⚠️ Version '${TAG}' not confirmed on Ansible Galaxy after $((MAX_ATTEMPTS * 15))s."
+          echo "::warning::   Import step completed — propagation may still be in progress."
+          echo "::warning::   Check: https://galaxy.ansible.com/ui/standalone/roles/newrelic/newrelic_install/"
+
+      # Commits a release marker directly to main as github-actions[bot].
+      # This mirrors the open-install-library and chef-install patterns: the main
+      # branch history clearly shows when each release was made and at what version.
+      # Runs only after all previous steps succeed so a partial failure leaves no
+      # false marker. Uses RELEASE_TOKEN (nr-developer-toolkit PAT with admin bypass)
+      # because direct pushes to main are subject to the org Branch Protection ruleset
+      # — the same constraint that affects chef-install.
+      # [skip ci] prevents CI from re-running on a marker-only commit.
+      # Retries once with rebase on a concurrent push race (matching OIL's pattern).
+      - name: "📌 Record: Commit Release Marker to main"
+        run: |
+          set -euo pipefail
+          RELEASE_DATE=$(TZ="Asia/Kolkata" date +'%-d %B %Y')
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit --allow-empty \
+            -m "chore(release): v${VERSION}, ${RELEASE_DATE} [skip ci]"
+
+          # Retry once with rebase if another commit landed on main between checkout and push.
+          if ! git push origin main; then
+            echo "Push rejected — rebasing on latest main and retrying..."
+            git pull --rebase origin main
+            git push origin main
+          fi
+          echo "✅ Release marker committed to main."
