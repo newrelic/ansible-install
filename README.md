@@ -151,7 +151,7 @@ Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy fo
 
 #### `mssql-otel` (self-hosted, SQL Server Authentication) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every SQL Server instance to monitor, in the order to number them, e.g.:
   ```yaml
   instances:
@@ -168,13 +168,13 @@ A bad instance (wrong password, unsupported SQL Server version, failed login set
 
 #### `mssql-otel-rds` (AWS RDS SQL Server, SQL Server Authentication) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS SQL Server instance to monitor, same format as `mssql-otel` above but with RDS endpoints as `host`.
 - `NR_CLI_MSSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring login: `NR_CLI_MSSQL_ADMIN_USER_<i>` / `NR_CLI_MSSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
 
 #### `mssql-otel-winauth` (self-hosted, Windows Domain Auth or gMSA) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
 - `NR_CLI_MSSQL_WINAUTH_LOCATION` (optional, Windows Domain Auth only) `1` if the collector runs on the same host as SQL Server, `2` if it runs on a different host. Defaults to `1`.
 - `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every SQL Server instance to monitor (`host`/`port` per entry — no per-instance secrets file, since Windows Auth doesn't need per-instance credentials). Replaces the old single-instance `NR_CLI_MSSQL_SERVER`/`NR_CLI_MSSQL_PORT` vars, which have been removed with no fallback.
@@ -185,7 +185,7 @@ One auth mode and one Windows identity apply to the whole install — every inst
 
 #### `mssql-otel-rds-winauth` (AWS RDS SQL Server joined to an AWS Managed AD domain, Windows Domain Auth or gMSA) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MSSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MSSQL_AUTH_MODE` (optional) `1` for Windows Domain Auth or `2` for gMSA. Defaults to `1`
 - `NR_CLI_MSSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS SQL Server instance to monitor (`host`/`port` per entry). Replaces the old single-instance `NR_CLI_MSSQL_SERVER`/`NR_CLI_MSSQL_PORT` vars, which have been removed with no fallback.
 - `NR_CLI_MSSQL_WIN_ACCOUNT` / `NR_CLI_MSSQL_WIN_PASSWORD` (**required** if `NR_CLI_MSSQL_AUTH_MODE` is `1`) Windows domain account (`DOMAIN\username`) and password to grant permissions to and run the collector service as. Unlike the self-hosted recipe, there is no "same host" option here — a domain account is always required for Windows Domain Auth.
@@ -200,7 +200,7 @@ One auth mode and one Windows identity apply to the whole install — every inst
 
 #### `mysql-otel` (self-hosted) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MYSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every MySQL instance to monitor, e.g.:
   ```yaml
   instances:
@@ -217,14 +217,13 @@ A bad instance is skipped rather than aborting the whole install — the install
 
 #### `mysql-otel-rds` (AWS RDS/Aurora MySQL) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_MYSQL_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_MYSQL_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS/Aurora MySQL instance to monitor, same format as `mysql-otel` above but with RDS endpoints as `host`.
 - `NR_CLI_MYSQL_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance: `NR_CLI_MYSQL_ADMIN_USER_<i>` / `NR_CLI_MYSQL_ADMIN_PASSWORD_<i>` (both required for every instance).
-- `NR_CLI_MYSQL_TLS_CA_FILE` (optional) Path to a CA certificate file for validating the server's TLS certificate. Leave unset to skip CA validation.
 
 #### `postgresql-otel` (self-hosted) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_POSTGRES_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every PostgreSQL instance and its databases to monitor. `databases` is per-instance now (there is no separate global databases variable), e.g.:
   ```yaml
   instances:
@@ -244,14 +243,14 @@ An instance with no databases listed, or that fails its checks, is skipped rathe
 
 #### `postgresql-otel-rds` (AWS RDS/Aurora PostgreSQL) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Standard or `2` for Full-feature metric collection. Defaults to `1`
+- `NR_CLI_POSTGRES_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`
 - `NR_CLI_POSTGRES_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file, same format as `postgresql-otel` above but with RDS/Aurora endpoints as `host`.
 - `NR_CLI_POSTGRES_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance: `NR_CLI_POSTGRES_SUPERUSER_USER_<i>` / `NR_CLI_POSTGRES_SUPERUSER_PASSWORD_<i>` (both required for every instance).
 - `NR_CLI_POSTGRES_ENABLE_EXPLAIN_HELPER` (optional, PREVIEW) Same as `postgresql-otel` above. Defaults to `n`.
 
 #### `oracle-otel` (self-hosted Oracle, RHEL/OEL) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`.
 - `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every Oracle Database host to monitor. `pdb_name` is only required when that instance's `container_type` is `2` (PDB), e.g.:
   ```yaml
   instances:
@@ -277,7 +276,7 @@ An instance that fails its checks is skipped rather than aborting the whole inst
 
 #### `oracle-otel-rds` (Oracle on AWS RDS) — supports monitoring multiple instances from one collector:
 
-- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for database metrics only, `2` for host + database metrics. Defaults to `1`.
+- `NR_CLI_ORACLE_CONFIG_PRESET` (optional) `1` for Basic or `2` for Advanced metric collection. Defaults to `1`.
 - `NR_CLI_ORACLE_INSTANCES_FILE` (**required**) Path (already present on the target host) to a YAML file listing every RDS Oracle instance to monitor: `host` / `port` / `service` / `login_name` per entry.
 - `NR_CLI_ORACLE_SECRETS_FILE` (**required**) Path (already present on the target host) to a `KEY=VALUE` file with the RDS master credentials used once per instance to create the monitoring user: `NR_CLI_ORACLE_ADMIN_USER_<i>` / `NR_CLI_ORACLE_ADMIN_PASSWORD_<i>` (both required for every instance). `NR_CLI_ORACLE_LOGIN_PASSWORD_<i>` is optional per instance (leave unset to auto-generate).
 
