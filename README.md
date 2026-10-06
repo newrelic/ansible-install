@@ -63,7 +63,6 @@ List of targeted installs to run on hosts. Available options are:
 - `infrastructure` (Linux & Windows)
 - `logs` (Linux & Windows)
 - `apm-php` (Linux)
-- `apm-nodejs` (Linux)
 - `apm-dotnet` (Linux & Windows)
 - `apm-java` (Linux)
 - `apache` (Linux)
@@ -85,7 +84,6 @@ List of targeted installs to run on hosts. Available options are:
 Important Notes:
 
 - the `logs` target requires `infrastructure`, and an error will be thrown if `logs` is specified without `infrastructure`.
-- the `apm-nodejs` agent installation is supported only for apps managed by [PM2](https://pm2.keymetrics.io/). To install the agent using a package manager such as `npm` or `yarn` or via other installation paths, please reference our [docs](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/installation-configuration/install-nodejs-agent/).
 - the `apm-dotnet` agent installation for Windows is supported only for apps hosted by [IIS](https://www.iis.net/). Linux installations are only supported for .NET applications which run as a `systemd` service.
 - the `apm-java` agent installation supports Java running in Tomcat, Wildfly/Jboss, and Jetty (standalone). Note that this is a limited Java APM installation which instruments certain Java app servers via dynamic attachment using New Relic's Java introspector. More details [here](https://github.com/newrelic/open-install-library/blob/main/docs/guided-java.md)
 - the `mysql-otel*` and `postgresql-otel*` targets are separate integrations from `mysql`: they monitor the database via the NRDOT (New Relic distribution of the OpenTelemetry) Collector instead of a classic on-host integration, do not require the infrastructure agent, and use their own `NR_CLI_MYSQL_*` / `NR_CLI_POSTGRES_*` environment variables (see below) rather than `mysql`'s `NEW_RELIC_MYSQL_*` variables.
