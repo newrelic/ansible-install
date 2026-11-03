@@ -130,27 +130,6 @@ Values are set under the [`environment`](https://docs.ansible.com/ansible/latest
 
 Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
-#### Using an ingest license key instead of a user API key
-
-If you would prefer not to provision a user API key, you can supply `NEW_RELIC_LICENSE_KEY` in place of `NEW_RELIC_API_KEY`. `NEW_RELIC_ACCOUNT_ID` is still required.
-
-Note that without a user API key, install event reporting and the guided-install status UI are not available for that run. The agent install itself completes normally.
-
-```yaml
-- name: Install New Relic infra agent
-  hosts: all
-  roles:
-    - role: newrelic.newrelic_install
-      vars:
-        targets:
-          - infrastructure
-          - logs
-  environment:
-    NEW_RELIC_LICENSE_KEY: "{{ lookup('env', 'NEW_RELIC_LICENSE_KEY') }}"
-    NEW_RELIC_ACCOUNT_ID: "{{ lookup('env', 'NEW_RELIC_ACCOUNT_ID') }}"
-    NEW_RELIC_REGION: US
-```
-
 #### `apm-php`:
 
 - `NEW_RELIC_APPLICATION_NAME` (optional) The name of the PHP application to instrument. This name will be listed under New Relic's `APM & Services`. If omitted, defaults to `PHP Application`.
