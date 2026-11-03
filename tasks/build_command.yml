@@ -32,7 +32,7 @@
 
 - name: Create install command report
   ansible.builtin.set_fact:
-    install_command_report: r"{{ install_command | regex_replace('(?<=NEW_RELIC_API_KEY=)[^\s]*', '<hidden>') }}"
+    install_command_report: r"{{ install_command | regex_replace('(?<=NEW_RELIC_API_KEY=)[^\s]*', '<hidden>') | regex_replace('(?<=NEW_RELIC_LICENSE_KEY=)[^\s]*', '<hidden>') }}"
 
 - name: Report install command
   ansible.builtin.debug:
