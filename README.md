@@ -124,24 +124,17 @@ Set in [defaults/main.yml](https://github.com/newrelic/ansible-install/blob/main
 
 Values are set under the [`environment`](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_environment.html) keyword in your playbook:
 
+- `NEW_RELIC_API_KEY` (required)
 - `NEW_RELIC_ACCOUNT_ID` (required)
-- `NEW_RELIC_API_KEY` (required unless `NEW_RELIC_LICENSE_KEY` is provided — see below)
-- `NEW_RELIC_LICENSE_KEY` (required unless `NEW_RELIC_API_KEY` is provided — see below)
 - `NEW_RELIC_REGION` (optional: 'US', 'EU', or 'JP', default 'US')
 
-#### Credentials: API key vs license key
+Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
-The role accepts either a **user API key** (`NEW_RELIC_API_KEY`) or an **ingest license key** (`NEW_RELIC_LICENSE_KEY`). Exactly one must be non-empty; `NEW_RELIC_ACCOUNT_ID` is always required.
+#### Using an ingest license key instead of a user API key
 
-| | API key (`NEW_RELIC_API_KEY`) | License key (`NEW_RELIC_LICENSE_KEY`) |
-|---|---|---|
-| Agent installation | ✅ | ✅ |
-| Install event reporting (guided-install UI) | ✅ | ❌ not available |
-| Platform short link at end of install | ✅ | ❌ not available |
+If you would prefer not to provision a user API key, you can supply `NEW_RELIC_LICENSE_KEY` in place of `NEW_RELIC_API_KEY`. `NEW_RELIC_ACCOUNT_ID` is still required.
 
-Use `NEW_RELIC_LICENSE_KEY` when you prefer not to provision a dedicated user to hold a user API key. The infrastructure agent only needs the license key to run; the API key is used by the CLI solely for install tracking. Without it the install completes successfully, but the run will not appear in the guided-install status UI.
-
-**License-key-only example:**
+Note that without a user API key, install event reporting and the guided-install status UI are not available for that run. The agent install itself completes normally.
 
 ```yaml
 - name: Install New Relic infra agent
@@ -157,8 +150,6 @@ Use `NEW_RELIC_LICENSE_KEY` when you prefer not to provision a dedicated user to
     NEW_RELIC_ACCOUNT_ID: "{{ lookup('env', 'NEW_RELIC_ACCOUNT_ID') }}"
     NEW_RELIC_REGION: US
 ```
-
-Additionally, an optional `HTTPS_PROXY` variable can be set to enable a proxy for your installation.
 
 #### `apm-php`:
 
