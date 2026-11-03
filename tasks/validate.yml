@@ -8,6 +8,11 @@
   retries: 0
   no_log: true
 
+- name: Warn if neither API key nor license key is provided
+  when: not api_key_is_set and not license_key_is_set
+  ansible.builtin.debug:
+    msg: "Either NEW_RELIC_API_KEY or NEW_RELIC_LICENSE_KEY must be set under `environment`."
+
 - name: Assert that required environment variables are set
   ansible.builtin.assert:
     that:
