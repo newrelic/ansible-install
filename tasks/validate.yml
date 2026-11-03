@@ -2,17 +2,25 @@
 - name: Check play environment for required variables
   loop: "{{ environment }}"
   ansible.builtin.set_fact:
-    account_id_is_set: "{{ item.NEW_RELIC_ACCOUNT_ID is defined }}"
-    api_key_is_set: "{{ item.NEW_RELIC_API_KEY is defined }}"
+    account_id_is_set: "{{ item.NEW_RELIC_ACCOUNT_ID is defined and item.NEW_RELIC_ACCOUNT_ID != '' }}"
+    api_key_is_set: "{{ item.NEW_RELIC_API_KEY is defined and item.NEW_RELIC_API_KEY != '' }}"
+    license_key_is_set: "{{ item.NEW_RELIC_LICENSE_KEY is defined and item.NEW_RELIC_LICENSE_KEY != '' }}"
   retries: 0
   no_log: true
+
+- name: Warn if neither API key nor license key is provided
+  when: not api_key_is_set and not license_key_is_set
+  ansible.builtin.debug:
+    msg: "Either NEW_RELIC_API_KEY or NEW_RELIC_LICENSE_KEY must be set under `environment`."
 
 - name: Assert that required environment variables are set
   ansible.builtin.assert:
     that:
       - account_id_is_set
-      - api_key_is_set
-    fail_msg: "Environment variables NEW_RELIC_ACCOUNT_ID and NEW_RELIC_API_KEY are required. Please set these in your play under `environment`"
+      - api_key_is_set or license_key_is_set
+    fail_msg: >-
+      NEW_RELIC_ACCOUNT_ID is required, plus either NEW_RELIC_API_KEY or NEW_RELIC_LICENSE_KEY.
+      Please set these in your play under `environment`.
 
 - name: Assert at least one installation target is specified
   ansible.builtin.assert:
